@@ -1,0 +1,171 @@
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.*;
+import java.io.*;
+import javax.imageio.*;
+import java.util.*;
+import java.nio.file.*;
+import org.json.*;
+ 
+/**
+ * This class demonstrates how to load an Image from an external file
+ */
+public class BarcodeMaker {
+           
+    private ArrayList<BufferedImage> imgList;
+    private ArrayList<Color> avgColorList;
+    private BufferedImage output;
+ 
+ 	//constructor does nothing because all variables start with no value
+    public BarcodeMaker() {
+
+    	imgList = new ArrayList<BufferedImage>();
+    	avgColorList = new ArrayList<Color>();
+
+    }
+
+    //loads images from given folder
+    public void loadImages(String folderPath, String jsonPath) {
+
+    	File folder = new File(folderPath);
+    	File[] fileList = folder.listFiles();
+
+    	//read JSON file to get load order
+    	BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(jsonPath));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+    	String jsonText = "";
+		String st; 
+		try {
+			while ((st = br.readLine()) != null) {
+				jsonText += st;
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
+    	
+		JSONTokener jsonReader = new JSONTokener(jsonText);
+		JSONObject jsonObj = new JSONObject(jsonReader);
+		JSONArray jsonArr = jsonObj.getJSONArray("photos");
+		System.out.println(jsonArr.length());
+		
+		
+    	//load all images
+    	for (File file : fileList) {
+
+    		int lastFourIndex = file.getName().length()-4;
+    		String lastFourChars = file.getName().substring(lastFourIndex);
+
+    		//if valid image, read and add to ArrayList
+    		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
+    			try {
+    				System.out.print("\nLoading " + file.getName() + "... ");
+           			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(file.getPath()))));
+           			System.out.print("[DONE]");
+       			} catch (IOException e) {
+       				System.out.print("[FAILED]");
+       				e.printStackTrace(System.out);
+       			}
+    		} else {
+    			System.out.print("\nNot an image: " + file.getName());
+    		}
+    	}
+    }
+
+    /* Obtained from Stack Overflow here: https://stackoverflow.com/questions/28162488/get-average-color-on-bufferedimage-and-bufferedimage-portion-as-fast-as-possible
+	 * Where bi is your image, (x0,y0) is your upper left coordinate, and (w,h)
+	 * are your width and height respectively
+	 */
+	public Color averageColor(BufferedImage img) {
+
+		int width = img.getWidth();
+		int height = img.getHeight();
+	    long sumRed = 0, sumGreen = 0, sumBlue = 0;
+	    for (int x = 0; x < width; x++) {
+	        for (int y = 0; y < height; y++) {
+	            Color pixel = new Color(img.getRGB(x, y));
+	            sumRed += pixel.getRed();
+	            sumGreen += pixel.getGreen();
+	            sumBlue += pixel.getBlue();
+	        }
+	    }
+	    int numPixels = width * height;
+	    int avgRed = (int)(sumRed/numPixels);
+	    int avgGreen = (int)(sumGreen/numPixels);
+	    int avgBlue = (int)(sumBlue/numPixels);
+
+	    //convert to HSB to manipulate hue, saturation, or brightness for neat effects
+	    float[] avgHSB = Color.RGBtoHSB(avgRed, avgGreen, avgBlue, null);
+	    return Color.getHSBColor(avgHSB[0], (float)1, avgHSB[2]);
+
+	    //System.out.println("Red avg: " + avgRed);
+	    //System.out.println("Green avg: " + avgGreen);
+	    //System.out.println("Blue avg: " + avgBlue);
+
+	    //return new Color(avgRed, avgGreen, avgBlue);
+	}
+
+	//finds average of all images in imgList
+	public void averageAll() {
+
+		int imgCount = 1;
+
+    	//average each image and make a list of the averages
+    	for (BufferedImage img : imgList) {
+    		System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
+    		avgColorList.add(averageColor(img));
+    		System.out.print("[DONE]");
+    		imgCount++;
+    		//System.out.println("made an avg");
+    	}
+	}
+
+	//must only be run after the images are loaded
+	public void createBarcode(String savePath, int stripeWidth) {
+
+		int numStripes = avgColorList.size();
+
+		//initialize new image
+		output = new BufferedImage(numStripes*stripeWidth, 100, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = output.createGraphics();
+
+		//draw each stripe
+		for (int i = 0; i < numStripes; i++) {
+			g2d.setColor(avgColorList.get(i));
+			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), 100);
+		}
+		
+		//save image
+		try {
+			File outputFile = new File(savePath);
+			ImageIO.write(output, "png", outputFile);
+		} catch (IOException e) {
+			System.out.print("\nSaving failed");
+		}
+	}
+
+	//sorts color list by hue, saturation, or brightness
+	public void sortAvgColorList() {
+		avgColorList.sort(new Comparator<Color>() {
+		    @Override
+		    public int compare(Color o1, Color o2) {
+		    	float[] o1HSB = Color.RGBtoHSB(o1.getRed(), o1.getGreen(), o1.getBlue(), null);
+		    	float[] o2HSB = Color.RGBtoHSB(o2.getRed(), o2.getGreen(), o2.getBlue(), null);
+
+		    	if (o1HSB[0] > o2HSB[0]) return -1;
+		    	else if (o1HSB[0] == o2HSB[0]) return 0;
+		    	else return 1;
+
+		    	//System.out.println("first HSB: " + o1HSB[0]);
+		    	//System.out.println("second HSB: " + o2HSB[0]);
+		        //return (int)(10.0*(o1HSB[0] - o2HSB[0]));
+    		}
+		});
+	} 
+}
