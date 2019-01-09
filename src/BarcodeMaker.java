@@ -11,7 +11,7 @@ import org.json.*;
  * This class demonstrates how to load an Image from an external file
  */
 public class BarcodeMaker {
-           
+    
     private ArrayList<BufferedImage> imgList;
     private ArrayList<Color> avgColorList;
     private BufferedImage output;
@@ -24,11 +24,34 @@ public class BarcodeMaker {
 
     }
 
-    //loads images from given folder
-    public void loadImages(String folderPath, String jsonPath) {
-
+    public void loadImagesFromFolder(String folderPath) {
     	File folder = new File(folderPath);
     	File[] fileList = folder.listFiles();
+    	
+    	//load all images
+    	for (File file : fileList) {
+
+    		int lastFourIndex = file.getName().length()-4;
+    		String lastFourChars = file.getName().substring(lastFourIndex);
+
+    		//if valid image, read and add to ArrayList
+    		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
+    			try {
+    				System.out.print("\nLoading " + file.getName() + "... ");
+           			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(file.getPath()))));
+           			System.out.print("[DONE]");
+       			} catch (IOException e) {
+       				System.out.print("[FAILED]");
+       				e.printStackTrace(System.out);
+       			}
+    		} else {
+    			System.out.print("\nNot an image: " + file.getName());
+    		}
+    	}
+    }
+    
+    //loads images given JSON for dates--assumes all images match the JSON file and are in the "images" folder
+    public void loadImagesChronologically(String folderPath, String jsonPath) {
 
     	//read JSON file to get load order
     	BufferedReader br = null;
@@ -53,29 +76,26 @@ public class BarcodeMaker {
 		JSONTokener jsonReader = new JSONTokener(jsonText);
 		JSONObject jsonObj = new JSONObject(jsonReader);
 		JSONArray jsonArr = jsonObj.getJSONArray("photos");
-		System.out.println(jsonArr.length());
 		
-		
-    	//load all images
-    	for (File file : fileList) {
-
-    		int lastFourIndex = file.getName().length()-4;
-    		String lastFourChars = file.getName().substring(lastFourIndex);
+		for (int i = 0; i < jsonArr.length(); i++) {
+			
+			//find file name for this image
+			JSONObject imgData = jsonArr.getJSONObject(i);
+			String imgName = imgData.getString("path").split("/")[2]; //get 3rd item
+			String imgPath = "images/" + imgName;
 
     		//if valid image, read and add to ArrayList
-    		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
-    			try {
-    				System.out.print("\nLoading " + file.getName() + "... ");
-           			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(file.getPath()))));
-           			System.out.print("[DONE]");
-       			} catch (IOException e) {
-       				System.out.print("[FAILED]");
-       				e.printStackTrace(System.out);
-       			}
-    		} else {
-    			System.out.print("\nNot an image: " + file.getName());
-    		}
-    	}
+			try {
+				System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
+       			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(imgPath))));
+       			System.out.print("[DONE]");
+   			} catch (IOException e) {
+   				System.out.print("[FAILED]");
+   				e.printStackTrace(System.out);
+   			}
+
+		}
+
     }
 
     /* Obtained from Stack Overflow here: https://stackoverflow.com/questions/28162488/get-average-color-on-bufferedimage-and-bufferedimage-portion-as-fast-as-possible
@@ -102,7 +122,7 @@ public class BarcodeMaker {
 
 	    //convert to HSB to manipulate hue, saturation, or brightness for neat effects
 	    float[] avgHSB = Color.RGBtoHSB(avgRed, avgGreen, avgBlue, null);
-	    return Color.getHSBColor(avgHSB[0], (float)1, avgHSB[2]);
+	    return Color.getHSBColor(avgHSB[0], avgHSB[1], avgHSB[2]);
 
 	    //System.out.println("Red avg: " + avgRed);
 	    //System.out.println("Green avg: " + avgGreen);

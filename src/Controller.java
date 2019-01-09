@@ -10,13 +10,13 @@ public class Controller {
         BarcodeMaker barcodeGen = new BarcodeMaker();
 
 		//load all images to be used
-    	barcodeGen.loadImages("images/", "images/media.json");
+    	barcodeGen.loadImagesChronologically("images/", "images/media.json");
 
     	//
     	barcodeGen.averageAll();
 
     	System.out.print("\nSorting... ");
-    	barcodeGen.sortAvgColorList();
+    	//barcodeGen.sortAvgColorList();
     	System.out.print("[DONE]");
 
     	//System.out.println("made it here");
