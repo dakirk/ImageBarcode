@@ -12,11 +12,14 @@ public class Controller {
 		//load all images to be used
     	barcodeGen.loadImagesChronologically("images/", "images/media.json");
 
-    	//
     	barcodeGen.averageAll();
 
     	System.out.print("\nSorting... ");
-    	//barcodeGen.sortAvgColorList();
+    	barcodeGen.sortAvgColorList("saturation");
+    	System.out.print("[DONE]");
+    	
+    	System.out.print("\nAdjusting HSB values... ");
+    	barcodeGen.adjustHSB(1.0, 1.0, 1.0);
     	System.out.print("[DONE]");
 
     	//System.out.println("made it here");
