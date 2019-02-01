@@ -190,18 +190,18 @@ public class BarcodeMaker {
 	}
 
 	//must only be run after the images are loaded
-	public void createBarcode(String savePath, int stripeWidth) {
+	public void createBarcode(String savePath, int stripeWidth, int imgHeight) {
 
 		int numStripes = avgColorList.size();
 
 		//initialize new image
-		output = new BufferedImage(numStripes*stripeWidth, 100, BufferedImage.TYPE_INT_RGB);
+		output = new BufferedImage(numStripes*stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = output.createGraphics();
 
 		//draw each stripe
 		for (int i = 0; i < numStripes; i++) {
 			g2d.setColor(avgColorList.get(i));
-			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), 100);
+			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), imgHeight);
 		}
 		
 		//save image

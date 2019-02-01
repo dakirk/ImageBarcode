@@ -1,5 +1,6 @@
 import javax.swing.SwingWorker;
 
+//based on: http://www.javacreed.com/swing-worker-example/
 public class BarcodeWorker extends SwingWorker<Integer, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
@@ -72,7 +73,7 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
 
     	publish("Generating and saving barcode...");
     	//System.out.print("\nGenerating and saving barcode... ");
-    	barcodeGen.createBarcode("./barcode.png", 1);
+    	barcodeGen.createBarcode("./barcode.png", 4, 100);
     	//System.out.println("[DONE]");
     	
     	failIfInterrupted();

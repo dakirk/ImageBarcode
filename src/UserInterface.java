@@ -1,7 +1,6 @@
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.concurrent.TimeUnit;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.*;
@@ -21,6 +20,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	static JLabel descriptionLabelSort, descriptionLabelEnhance;
 	static JFrame f;
 	static JComboBox sortOptionBox, enhanceOptionBox;
+	static JTextField barWidth, imgHeight;
 	static JButton startButton;
 	
 	UserInterface() {
@@ -55,17 +55,32 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel2.add(descriptionLabelEnhance);
 		panel2.add(enhanceOptionBox);
 		
+		//text boxes
+		JPanel panel3 = new JPanel();
+		
+		barWidth = new JTextField();
+		barWidth.setBounds(50,150,150,20);
+		
+		imgHeight = new JTextField();
+		imgHeight.setBounds(50,200,150,20); 
+		
+		panel3.add(barWidth);
+		panel3.add(imgHeight);
+		
+		
+		//start button
 		startButton = new JButton("Create Barcode");
 		startButton.setBounds(130, 100, 100, 40);
 		startButton.addActionListener(this);
-		JPanel panel3 = new JPanel();
-		panel3.add(startButton);
+		JPanel panel4 = new JPanel();
+		panel4.add(startButton);
 		
 		
 		
 		f.add(panel1);
 		f.add(panel2);
 		f.add(panel3);
+		f.add(panel4);
 		
 		f.setSize(400,  500);
 		f.setLayout(new FlowLayout());
@@ -124,13 +139,13 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, hasJSON);
 		
+		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
-			
 			@Override
 			public void propertyChange(final PropertyChangeEvent event) {
 				String property = event.getPropertyName();
 				
-				if (event.getPropertyName().equals("state")) {
+				if (property.equals("state")) {
 					
 					//if processing over, reset button
 					if ((StateValue)event.getNewValue() == StateValue.DONE) {
@@ -141,53 +156,9 @@ public class UserInterface extends JFrame implements ActionListener {
 				
 			}
 		});
-		
-		
+				
 		bworker.execute();
 		
-		/*
-		BarcodeMaker barcodeGen = new BarcodeMaker();
 
-		//load all images to be used
-		if (hasJSON) { //if JSON for chronological order is available
-	    	barcodeGen.loadImagesChronologically("images/", "images/media.json");
-		} else { //otherwise
-			barcodeGen.loadImagesFromFolder("testImages/");
-		}
-
-		//get average colors for each image
-    	barcodeGen.averageAll();
-
-    	System.out.println(sortOpt);
-    	
-    	//sort if necessary
-    	if (!sortOpt.equals("None") && !sortOpt.equals("Chronological")) {
-        	System.out.print("\nSorting... ");
-    		barcodeGen.sortAvgColorList(sortOpt.toLowerCase());
-        	System.out.print("[DONE]");
-    	}
-    	
-    	//enhance one color attribute if requested
-    	if (!enhanceOpt.equals("None")) {
-        	
-    		System.out.print("\nAdjusting HSB values... ");
-    		switch(enhanceOpt) {
-    			case "Hue": 		barcodeGen.adjustHSB(1.0, null, null);
-    								break;
-    			case "Saturation":	barcodeGen.adjustHSB(null, 1.0, null);
-    								break;
-    			case "Brightness":	barcodeGen.adjustHSB(null,  null,  1.0);
-    								break;
-    			default: 			break;
-    		}
-        	System.out.print("[DONE]");
-    	}
-
-    	//System.out.println("made it here");
-
-    	System.out.print("\nGenerating and saving barcode... ");
-    	barcodeGen.createBarcode("./barcode.png", 1);
-    	System.out.println("[DONE]");
-    	*/
 	}
 }

@@ -1,3 +1,10 @@
+//TODO:
+//1. Add the rest of the settings (bar width, image height, input path, JSON path, output path)
+//2. Fix warnings
+//3. Upload to Github [DONE]
+//4. Implement a progress bar
+//5. Package as executable
+
 
 public class Controller {
 
