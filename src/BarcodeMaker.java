@@ -82,7 +82,7 @@ public class BarcodeMaker {
 			//find file name for this image
 			JSONObject imgData = jsonArr.getJSONObject(i);
 			String imgName = imgData.getString("path").split("/")[2]; //get 3rd item
-			String imgPath = folderPath + imgName;
+			String imgPath = folderPath + "/" + imgName;
 
     		//if valid image, read and add to ArrayList
 			try {
@@ -91,7 +91,7 @@ public class BarcodeMaker {
        			System.out.print("[DONE]");
    			} catch (IOException e) {
    				System.out.print("[FAILED]");
-   				//e.printStackTrace(System.out);
+   				e.printStackTrace(System.out);
    			}
 
 		}

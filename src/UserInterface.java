@@ -2,12 +2,14 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 public class UserInterface extends JFrame implements ActionListener {
 	
 	
@@ -15,24 +17,26 @@ public class UserInterface extends JFrame implements ActionListener {
 	String[] sortOptionsJSON = {"Hue", "Saturation", "Brightness", "Chronological"};
 	String[] enhanceOptions = {"Hue", "Saturation", "Brightness", "None"};
 	
-	static String sortOption;
-	static String enhanceOption;
-	static int barWidth;
-	static int imgHeight;
+	String sortOption;
+	String enhanceOption;
+	int barWidth;
+	int imgHeight;
+	String imgPath;
+	String jsonPath;
+	boolean hasJSON;
 	
-	static boolean hasJSON;
-	
-	static JLabel descriptionLabelSort, descriptionLabelEnhance;
-	static JFrame f;
-	static JComboBox sortOptionBox, enhanceOptionBox;
-	static JTextField barWidthBox, imgHeightBox;
-	static JButton startButton;
-	static JPanel imgPanel;
+	JLabel descriptionLabelSort, descriptionLabelEnhance;
+	JFrame f;
+	JComboBox sortOptionBox, enhanceOptionBox;
+	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText;
+	JButton startButton, imgPathChooseButton, jsonPathChooseButton;
+	JFileChooser imgPathChooser, jsonPathChooser;
+	JPanel imgPanel;
 	 
 	
 	UserInterface() {
 		f = new JFrame();
-		hasJSON = true;
+		hasJSON = false;
 		
 		//drop-downs
 		
@@ -69,23 +73,67 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel1.add(enhanceOptionBox);
 		
 		//text boxes
-		JPanel panel3 = new JPanel();
-		
+		JPanel panel2 = new JPanel();
 		JLabel barWidthBoxLabel = new JLabel(" Bar width: ");
 		JLabel imgHeightBoxLabel = new JLabel(" Image Height: ");
 		
 		barWidthBox = new JTextField("1");
 		barWidth = 1;
-		
 		imgHeightBox = new JTextField("100");
 		imgHeight = 100;
 		
-		panel3.add(barWidthBoxLabel);
-		panel3.add(imgHeightBoxLabel);
-		panel3.add(barWidthBox);
-		panel3.add(imgHeightBox);
-		panel3.setLayout(new GridLayout(2, 2, 1, 1));
+		panel2.add(barWidthBoxLabel);
+		panel2.add(imgHeightBoxLabel);
+		panel2.add(barWidthBox);
+		panel2.add(imgHeightBox);
+		panel2.setLayout(new GridLayout(2, 2, 1, 1));
 		
+		
+		JPanel panel3 = new JPanel();
+		JLabel imgPathTextLabel = new JLabel(" Location of images: ");
+		JLabel jsonPathTextLabel = new JLabel(" Location of the JSON file: ");
+		
+		File workingDirectory = new File(System.getProperty("user.dir"));
+		
+		//sub-panel with text box and file select button
+		JPanel panel3a = new JPanel();
+		imgPath = "images/";
+		imgPathText = new JTextField("images/");
+		imgPathText.setEditable(false);
+		imgPathChooseButton = new JButton("Change");
+		imgPathChooseButton.addActionListener(this);
+		imgPathChooser = new JFileChooser(workingDirectory);
+		imgPathChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		panel3a.add(imgPathText);
+		panel3a.add(imgPathChooseButton);
+		
+		panel3a.setLayout(new GridLayout(1, 2, 1, 1));
+		
+		//sub-panel with text box and file select button
+		JPanel panel3b = new JPanel();
+		jsonPath = "";
+		jsonPathText = new JTextField("");
+		jsonPathText.setEditable(false);
+		jsonPathChooseButton = new JButton("Change");
+		jsonPathChooseButton.addActionListener(this);
+		jsonPathChooser = new JFileChooser(workingDirectory);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON FILES", "json");
+		jsonPathChooser.setFileFilter(filter);
+		jsonPathChooser.setAcceptAllFileFilterUsed(false);
+		
+		panel3b.add(jsonPathText);
+		panel3b.add(jsonPathChooseButton);
+		
+		panel3b.setLayout(new GridLayout(1, 2, 1, 1));
+		
+		
+		panel3.add(imgPathTextLabel);
+		panel3.add(jsonPathTextLabel);
+		panel3.add(panel3a);
+		panel3.add(panel3b);
+		
+		panel3.setLayout(new GridLayout(2, 4, 1, 1));
 		
 		//start button
 		startButton = new JButton("Create Barcode");
@@ -97,12 +145,13 @@ public class UserInterface extends JFrame implements ActionListener {
 		imgPanel = new JPanel();
 		
 		f.add(panel1);
+		f.add(panel2);
 		f.add(panel3);
 		f.add(panel4);
 		f.add(imgPanel);
 		
-		f.setSize(400,  200);
-		f.setLayout(new GridLayout(4, 1, 0, 0));
+		f.setSize(400,  300);
+		f.setLayout(new GridLayout(5, 1, 0, 0));
 		f.setVisible(true);
 	}
 	
@@ -118,6 +167,26 @@ public class UserInterface extends JFrame implements ActionListener {
 		if (e.getSource() == enhanceOptionBox) {
 			enhanceOption = (String)enhanceOptionBox.getSelectedItem();
 			System.out.println(enhanceOption);
+		}
+		
+		if (e.getSource() == imgPathChooseButton) {
+			int returnVal = imgPathChooser.showOpenDialog(this);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				imgPath = imgPathChooser.getSelectedFile().getPath();
+				imgPathText.setText(imgPath);
+			}
+		}
+		
+		if (e.getSource() == jsonPathChooseButton) {
+			int returnVal = jsonPathChooser.showOpenDialog(this);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				hasJSON = true;
+				sortOptionBox.addItem("Chronological");
+				jsonPath = jsonPathChooser.getSelectedFile().getPath();
+				jsonPathText.setText(jsonPath);
+			}
 		}
 		
 		//start button generates bar code
@@ -150,7 +219,8 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 			
 			startButton.setText("Loading...");
-			startButton.setEnabled(false);		
+			startButton.setEnabled(false);	
+			System.out.println(imgPath);
 			
 			createBarcode();
 			
@@ -158,9 +228,9 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 	}
 	
-	public BufferedImage createBarcode() {
+	public void createBarcode() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, hasJSON);
+		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -183,18 +253,15 @@ public class UserInterface extends JFrame implements ActionListener {
 							imgPanel.updateUI();
 							imgPanel.add(picLabel);
 						} catch (Exception e) {
-							System.out.println("Process interrupted");
-						}
+							JOptionPane.showMessageDialog(null, "Invalid JSON file. Please make sure this JSON file corresponds to your selected images.");
+							e.printStackTrace(System.out);						}
 					}
 				}
 				
 			}
 		});
 				
-		bworker.execute();
-		
-		return null;
-		
+		bworker.execute();		
 
 	}
 }

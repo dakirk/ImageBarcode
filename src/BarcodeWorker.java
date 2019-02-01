@@ -11,17 +11,19 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		}
 	}
 	
-	private final String sortOption, enhanceOption; //drop-down menu choices
+	private final String sortOption, enhanceOption, imgPath, jsonPath; //drop-down menu choices
 	private final int barWidth, imgHeight;
 	private final boolean hasJSON;
 	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final int imgHeight, final boolean hasJSON) {
+	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final int imgHeight, final String imgPath, final boolean hasJSON, final String jsonPath) {
 		this.sortOption = sortOption;
 		this.enhanceOption = enhanceOption;
 		this.barWidth = barWidth;
 		this.imgHeight = imgHeight;
 		this.hasJSON = hasJSON;
+		this.imgPath = imgPath;
+		this.jsonPath = jsonPath;	
 	}
 	
 	@Override
@@ -32,9 +34,9 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		//load all images to be used
 		publish("Loading images...");
 		if (hasJSON) { //if JSON for chronological order is available
-	    	barcodeGen.loadImagesChronologically("testImages/", "images/media.json");
+	    	barcodeGen.loadImagesChronologically(imgPath, jsonPath);
 		} else { //otherwise
-			barcodeGen.loadImagesFromFolder("testImages/");
+			barcodeGen.loadImagesFromFolder(imgPath);
 		}
 		
 		failIfInterrupted();
