@@ -76,35 +76,9 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		barWidthBox = new JTextField("1");
 		barWidth = 1;
-		barWidthBox.addActionListener(this);
-		/* document listener experiment
-		barWidthBox.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				  warn();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				warn();
-			}
-
-			public void warn() {
-				try {
-					if (!barWidthBox.getText().equals("") && Integer.parseInt(barWidthBox.getText())<=0){
-						JOptionPane.showMessageDialog(null, "Error: Please enter number bigger than 0", "Error Massage", JOptionPane.ERROR_MESSAGE);
-					}
-				} catch (NumberFormatException e) {
-					System.out.println("Invalid number format: " + barWidthBox.getText());
-				}
-			}
-		});
-		*/
-		//barWidthBox.setBounds(50,150,150,20);
 		
 		imgHeightBox = new JTextField("100");
-		imgHeightBox.addActionListener(this);
-		//imgHeightBox.setBounds(50,200,150,20); 
+		imgHeight = 100;
 		
 		panel3.add(barWidthBoxLabel);
 		panel3.add(imgHeightBoxLabel);
@@ -146,18 +120,35 @@ public class UserInterface extends JFrame implements ActionListener {
 			System.out.println(enhanceOption);
 		}
 		
-		if (e.getSource() == barWidthBox) {
-			int possBarWidth = Integer.parseInt(barWidthBox.getText());
-			if (possBarWidth > 0 && possBarWidth <= 1000) {
-				barWidth = possBarWidth;
-				System.out.println(barWidth);
-			} else {
-				System.out.println("dimensions invalid!");
-			}
-		}
-		
 		//start button generates bar code
 		if (e.getSource() == startButton) {
+			
+			//check validity of bar width text box
+			try {
+				int possBarWidth = Integer.parseInt(barWidthBox.getText());
+				if (possBarWidth > 0 && possBarWidth <= 100) {
+					barWidth = possBarWidth;
+				} else {
+					throw new NumberFormatException("Invalid bar width");
+				}	
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Invalid bar width. Please enter a number between 1 and 100");
+				return;
+			}
+			
+			//check validity of image height text box
+			try {
+				int possImgHeight = Integer.parseInt(imgHeightBox.getText());
+				if (possImgHeight > 0 && possImgHeight <= 1000) {
+					imgHeight = possImgHeight;
+				} else {
+					throw new NumberFormatException("Invalid image height width");
+				}	
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Invalid image height. Please enter a number between 1 and 1000");
+				return;
+			}
+			
 			startButton.setText("Loading...");
 			startButton.setEnabled(false);
 			
@@ -212,6 +203,7 @@ public class UserInterface extends JFrame implements ActionListener {
 							BufferedImage output = bworker.get();
 							JLabel picLabel = new JLabel(new ImageIcon(output));
 							imgPanel.removeAll();
+							imgPanel.updateUI();
 							imgPanel.add(picLabel);
 						} catch (Exception e) {
 							System.out.println("Process interrupted");
