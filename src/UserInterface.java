@@ -122,6 +122,11 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, hasJSON);
 		
+		
+		
+		
+		bworker.execute();
+		
 		/*
 		BarcodeMaker barcodeGen = new BarcodeMaker();
 
