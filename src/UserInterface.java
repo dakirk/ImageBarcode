@@ -120,12 +120,12 @@ public class UserInterface extends JFrame implements ActionListener {
 		JPanel panel4 = new JPanel();
 		panel4.add(startButton);
 		
-		
+		imgPanel = new JPanel();
 		
 		f.add(panel1);
 		f.add(panel3);
 		f.add(panel4);
-		//f.add(imgPanel);
+		f.add(imgPanel);
 		
 		f.setSize(400,  200);
 		f.setLayout(new GridLayout(4, 1, 0, 0));
@@ -207,14 +207,15 @@ public class UserInterface extends JFrame implements ActionListener {
 						startButton.setEnabled(true);
 						startButton.setText("Create Barcode");
 						
-						/*
+						
 						try {
 							BufferedImage output = bworker.get();
 							JLabel picLabel = new JLabel(new ImageIcon(output));
+							imgPanel.removeAll();
 							imgPanel.add(picLabel);
 						} catch (Exception e) {
 							System.out.println("Process interrupted");
-						}*/
+						}
 					}
 				}
 				
