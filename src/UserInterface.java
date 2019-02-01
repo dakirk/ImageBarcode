@@ -102,11 +102,12 @@ public class UserInterface extends JFrame implements ActionListener {
 					createBarcode(internalSortOption, internalEnhanceOption);
 				}
 			}
-			*/
+			
 			
 			//start thread
 			Thread barcodeThread = new Thread(new BarcodeRunnable(sortOption, enhanceOption));
 			barcodeThread.start();
+			*/
 			
 			
 			createBarcode();
