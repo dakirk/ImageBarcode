@@ -2,10 +2,13 @@
 public class Controller {
 
 	public static void main(String[] args) {
-		//InstagramScraper scraper = new InstagramScraper("asher.schachter");
 
 		//GENERATE BARCODE FROM GIVEN IMAGES
-		//TODO: rig loadImages to take the URL list instead of a directory
+		
+		//GUI test
+		new UserInterface();
+		
+		/*
 		
         BarcodeMaker barcodeGen = new BarcodeMaker();
 
@@ -27,6 +30,7 @@ public class Controller {
     	System.out.print("\nGenerating and saving barcode... ");
     	barcodeGen.createBarcode("./barcode.png", 1);
     	System.out.println("[DONE]");
+    	*/
 
 	}
 
