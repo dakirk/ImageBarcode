@@ -1,10 +1,13 @@
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.*;
 import javax.swing.SwingWorker.StateValue;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 public class UserInterface extends JFrame implements ActionListener {
 	
 	
@@ -14,21 +17,34 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	static String sortOption;
 	static String enhanceOption;
+	static int barWidth;
+	static int imgHeight;
 	
 	static boolean hasJSON;
 	
 	static JLabel descriptionLabelSort, descriptionLabelEnhance;
 	static JFrame f;
 	static JComboBox sortOptionBox, enhanceOptionBox;
-	static JTextField barWidth, imgHeight;
+	static JTextField barWidthBox, imgHeightBox;
 	static JButton startButton;
+	static JPanel imgPanel;
+	 
 	
 	UserInterface() {
 		f = new JFrame();
 		hasJSON = false;
 		
-		//sorting drop-down
-		descriptionLabelSort = new JLabel("Select sorting method: ");
+		//drop-downs
+		
+		JPanel panel1 = new JPanel(new GridLayout(2, 2, 0, 0));
+		descriptionLabelSort = new JLabel(" Select sorting method: ");
+		descriptionLabelSort.setOpaque(false);
+		panel1.add(descriptionLabelSort);
+		
+		descriptionLabelEnhance = new JLabel(" Select a value to enhance: ");	
+		descriptionLabelEnhance.setOpaque(false);
+		panel1.add(descriptionLabelEnhance);
+		
 		if (hasJSON) { 
 			sortOptionBox = new JComboBox(sortOptionsJSON);
 			sortOptionBox.setSelectedItem("Chronological"); //set default
@@ -40,37 +56,66 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 		//sortOptionBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		sortOptionBox.addActionListener(this);
-		JPanel panel1 = new JPanel();
-		panel1.add(descriptionLabelSort);
+		
 		panel1.add(sortOptionBox);
 		
 		//enhance drop-down
-		descriptionLabelEnhance = new JLabel("Select a value to enhance: ");		
 		enhanceOptionBox = new JComboBox(enhanceOptions); //set default
 		//enhanceOptionBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		enhanceOptionBox.addActionListener(this);
 		enhanceOptionBox.setSelectedItem("None");
 		enhanceOption = "None";
-		JPanel panel2 = new JPanel();
-		panel2.add(descriptionLabelEnhance);
-		panel2.add(enhanceOptionBox);
+		
+		panel1.add(enhanceOptionBox);
 		
 		//text boxes
 		JPanel panel3 = new JPanel();
 		
-		barWidth = new JTextField();
-		barWidth.setBounds(50,150,150,20);
+		JLabel barWidthBoxLabel = new JLabel(" Bar width: ");
+		JLabel imgHeightBoxLabel = new JLabel(" Image Height: ");
 		
-		imgHeight = new JTextField();
-		imgHeight.setBounds(50,200,150,20); 
+		barWidthBox = new JTextField("1");
+		barWidth = 1;
+		barWidthBox.addActionListener(this);
+		/* document listener experiment
+		barWidthBox.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				  warn();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				warn();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				warn();
+			}
+
+			public void warn() {
+				try {
+					if (!barWidthBox.getText().equals("") && Integer.parseInt(barWidthBox.getText())<=0){
+						JOptionPane.showMessageDialog(null, "Error: Please enter number bigger than 0", "Error Massage", JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (NumberFormatException e) {
+					System.out.println("Invalid number format: " + barWidthBox.getText());
+				}
+			}
+		});
+		*/
+		//barWidthBox.setBounds(50,150,150,20);
 		
-		panel3.add(barWidth);
-		panel3.add(imgHeight);
+		imgHeightBox = new JTextField("100");
+		imgHeightBox.addActionListener(this);
+		//imgHeightBox.setBounds(50,200,150,20); 
+		
+		panel3.add(barWidthBoxLabel);
+		panel3.add(imgHeightBoxLabel);
+		panel3.add(barWidthBox);
+		panel3.add(imgHeightBox);
+		panel3.setLayout(new GridLayout(2, 2, 1, 1));
 		
 		
 		//start button
 		startButton = new JButton("Create Barcode");
-		startButton.setBounds(130, 100, 100, 40);
+		//startButton.setBounds(130, 100, 100, 40);
 		startButton.addActionListener(this);
 		JPanel panel4 = new JPanel();
 		panel4.add(startButton);
@@ -78,12 +123,12 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		
 		f.add(panel1);
-		f.add(panel2);
 		f.add(panel3);
 		f.add(panel4);
+		//f.add(imgPanel);
 		
-		f.setSize(400,  500);
-		f.setLayout(new FlowLayout());
+		f.setSize(400,  200);
+		f.setLayout(new GridLayout(4, 1, 0, 0));
 		f.setVisible(true);
 	}
 	
@@ -99,6 +144,16 @@ public class UserInterface extends JFrame implements ActionListener {
 		if (e.getSource() == enhanceOptionBox) {
 			enhanceOption = (String)enhanceOptionBox.getSelectedItem();
 			System.out.println(enhanceOption);
+		}
+		
+		if (e.getSource() == barWidthBox) {
+			int possBarWidth = Integer.parseInt(barWidthBox.getText());
+			if (possBarWidth > 0 && possBarWidth <= 1000) {
+				barWidth = possBarWidth;
+				System.out.println(barWidth);
+			} else {
+				System.out.println("dimensions invalid!");
+			}
 		}
 		
 		//start button generates bar code
@@ -135,9 +190,9 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 	}
 	
-	public void createBarcode() {
+	public BufferedImage createBarcode() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, hasJSON);
+		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, hasJSON);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -151,6 +206,15 @@ public class UserInterface extends JFrame implements ActionListener {
 					if ((StateValue)event.getNewValue() == StateValue.DONE) {
 						startButton.setEnabled(true);
 						startButton.setText("Create Barcode");
+						
+						/*
+						try {
+							BufferedImage output = bworker.get();
+							JLabel picLabel = new JLabel(new ImageIcon(output));
+							imgPanel.add(picLabel);
+						} catch (Exception e) {
+							System.out.println("Process interrupted");
+						}*/
 					}
 				}
 				
@@ -158,6 +222,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		});
 				
 		bworker.execute();
+		
+		return null;
 		
 
 	}

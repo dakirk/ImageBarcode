@@ -1,7 +1,9 @@
+import java.awt.image.BufferedImage;
+
 import javax.swing.SwingWorker;
 
 //based on: http://www.javacreed.com/swing-worker-example/
-public class BarcodeWorker extends SwingWorker<Integer, String> { 
+public class BarcodeWorker extends SwingWorker<BufferedImage, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -10,17 +12,19 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
 	}
 	
 	private final String sortOption, enhanceOption; //drop-down menu choices
+	private final int barWidth;
 	private final boolean hasJSON;
 	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public BarcodeWorker(final String sortOption, final String enhanceOption, final boolean hasJSON) {
+	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final boolean hasJSON) {
 		this.sortOption = sortOption;
 		this.enhanceOption = enhanceOption;
+		this.barWidth = barWidth;
 		this.hasJSON = hasJSON;
 	}
 	
 	@Override
-	protected Integer doInBackground() throws Exception {
+	protected BufferedImage doInBackground() throws Exception {
 		
 		BarcodeMaker barcodeGen = new BarcodeMaker();
 
@@ -44,9 +48,9 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
     	
     	if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
         	publish("Sorting images...");
-    		//System.out.print("\nSorting... ");
+    		System.out.print("\nSorting... ");
     		barcodeGen.sortAvgColorList(sortOption.toLowerCase());
-        	//System.out.print("[DONE]");
+        	System.out.print("[DONE]");
     	}
     	
     	failIfInterrupted();
@@ -54,7 +58,7 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
     	//enhance one color attribute if requested
     	if (!enhanceOption.equals("None")) {
         	publish("Adjusting HSB values...");
-    		//System.out.print("\nAdjusting HSB values... ");
+    		System.out.print("\nAdjusting HSB values... ");
     		switch(enhanceOption) {
     			case "Hue": 		barcodeGen.adjustHSB(1.0, null, null);
     								break;
@@ -64,7 +68,7 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
     								break;
     			default: 			break;
     		}
-        	//System.out.print("[DONE]");
+        	System.out.print("[DONE]");
     	}
     	
     	failIfInterrupted();
@@ -72,13 +76,14 @@ public class BarcodeWorker extends SwingWorker<Integer, String> {
     	//System.out.println("made it here");
 
     	publish("Generating and saving barcode...");
-    	//System.out.print("\nGenerating and saving barcode... ");
-    	barcodeGen.createBarcode("./barcode.png", 4, 100);
-    	//System.out.println("[DONE]");
+    	System.out.print("\nGenerating and saving barcode... ");
+    	//System.out.println(barWidth);
+    	BufferedImage output = barcodeGen.createBarcode("./barcode.png", barWidth, 100);
+    	System.out.println("[DONE]");
     	
     	failIfInterrupted();
     	
-    	return 1; //successful completion
+    	return output; //successful completion
 	}
 	
 	

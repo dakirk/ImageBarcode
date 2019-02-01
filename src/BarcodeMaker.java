@@ -190,7 +190,7 @@ public class BarcodeMaker {
 	}
 
 	//must only be run after the images are loaded
-	public void createBarcode(String savePath, int stripeWidth, int imgHeight) {
+	public BufferedImage createBarcode(String savePath, int stripeWidth, int imgHeight) {
 
 		int numStripes = avgColorList.size();
 
@@ -211,6 +211,8 @@ public class BarcodeMaker {
 		} catch (IOException e) {
 			System.out.print("\nSaving failed");
 		}
+		
+		return output;
 	}
 
 	//sorts color list by hue, saturation, or brightness
