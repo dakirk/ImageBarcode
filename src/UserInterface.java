@@ -32,7 +32,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	UserInterface() {
 		f = new JFrame();
-		hasJSON = false;
+		hasJSON = true;
 		
 		//drop-downs
 		
@@ -150,30 +150,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 			
 			startButton.setText("Loading...");
-			startButton.setEnabled(false);
-			
-			/*
-			//create new runnable for barcode generation
-			class BarcodeRunnable implements Runnable {
-				String internalSortOption;
-				String internalEnhanceOption;
-				
-				BarcodeRunnable(String sort, String enhance) {
-					internalSortOption = sort;
-					internalEnhanceOption = enhance;
-				}
-				
-				public void run() {
-					createBarcode(internalSortOption, internalEnhanceOption);
-				}
-			}
-			
-			
-			//start thread
-			Thread barcodeThread = new Thread(new BarcodeRunnable(sortOption, enhanceOption));
-			barcodeThread.start();
-			*/
-			
+			startButton.setEnabled(false);		
 			
 			createBarcode();
 			
@@ -183,7 +160,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	public BufferedImage createBarcode() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, hasJSON);
+		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, hasJSON);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {

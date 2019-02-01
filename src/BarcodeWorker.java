@@ -12,14 +12,15 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 	}
 	
 	private final String sortOption, enhanceOption; //drop-down menu choices
-	private final int barWidth;
+	private final int barWidth, imgHeight;
 	private final boolean hasJSON;
 	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final boolean hasJSON) {
+	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final int imgHeight, final boolean hasJSON) {
 		this.sortOption = sortOption;
 		this.enhanceOption = enhanceOption;
 		this.barWidth = barWidth;
+		this.imgHeight = imgHeight;
 		this.hasJSON = hasJSON;
 	}
 	
@@ -31,7 +32,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		//load all images to be used
 		publish("Loading images...");
 		if (hasJSON) { //if JSON for chronological order is available
-	    	barcodeGen.loadImagesChronologically("images/", "images/media.json");
+	    	barcodeGen.loadImagesChronologically("testImages/", "images/media.json");
 		} else { //otherwise
 			barcodeGen.loadImagesFromFolder("testImages/");
 		}
@@ -77,8 +78,8 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 
     	publish("Generating and saving barcode...");
     	System.out.print("\nGenerating and saving barcode... ");
-    	//System.out.println(barWidth);
-    	BufferedImage output = barcodeGen.createBarcode("./barcode.png", barWidth, 100);
+    	//System.out.println(imgHeight);
+    	BufferedImage output = barcodeGen.createBarcode("./barcode.png", barWidth, imgHeight);
     	System.out.println("[DONE]");
     	
     	failIfInterrupted();
