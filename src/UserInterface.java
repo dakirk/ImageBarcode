@@ -1,7 +1,11 @@
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.TimeUnit;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.SwingWorker.*;
+import javax.swing.SwingWorker.StateValue;
 public class UserInterface extends JFrame implements ActionListener {
 	
 	
@@ -112,8 +116,6 @@ public class UserInterface extends JFrame implements ActionListener {
 			
 			createBarcode();
 			
-			startButton.setText("Create Barcode");
-			startButton.setEnabled(true);
 			
 		}
 	}
@@ -122,7 +124,23 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, hasJSON);
 		
-		
+		bworker.addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(final PropertyChangeEvent event) {
+				String property = event.getPropertyName();
+				
+				if (event.getPropertyName().equals("state")) {
+					
+					//if processing over, reset button
+					if ((StateValue)event.getNewValue() == StateValue.DONE) {
+						startButton.setEnabled(true);
+						startButton.setText("Create Barcode");
+					}
+				}
+				
+			}
+		});
 		
 		
 		bworker.execute();
