@@ -8,6 +8,8 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.*;
 import javax.swing.SwingWorker.StateValue;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,7 +32,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText;
-	JButton startButton, imgPathChooseButton, jsonPathChooseButton;
+	JButton startButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton;
 	JFileChooser imgPathChooser, jsonPathChooser;
 	JPanel imgPanel;
 	JProgressBar progBar;
@@ -39,6 +41,8 @@ public class UserInterface extends JFrame implements ActionListener {
 	UserInterface() {
 		f = new JFrame();
 		hasJSON = false;
+		Border lineBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+
 		
 		//drop-downs
 		
@@ -73,6 +77,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		enhanceOption = "None";
 		
 		panel1.add(enhanceOptionBox);
+		panel1.setBorder(lineBorder);
+
 		
 		//text boxes
 		JPanel panel2 = new JPanel();
@@ -88,14 +94,15 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel2.add(imgHeightBoxLabel);
 		panel2.add(barWidthBox);
 		panel2.add(imgHeightBox);
-		panel2.setLayout(new GridLayout(2, 2, 1, 1));
+		panel2.setLayout(new GridLayout(2, 2, 0, 0));
+		panel2.setBorder(lineBorder);
 		
+		//used in upcoming panels
+		File workingDirectory = new File(System.getProperty("user.dir"));
 		
+		//panel for selecting file paths
 		JPanel panel3 = new JPanel();
 		JLabel imgPathTextLabel = new JLabel(" Location of images: ");
-		JLabel jsonPathTextLabel = new JLabel(" Location of the JSON file: ");
-		
-		File workingDirectory = new File(System.getProperty("user.dir"));
 		
 		//sub-panel with text box and file select button
 		JPanel panel3a = new JPanel();
@@ -109,53 +116,71 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		panel3a.add(imgPathText);
 		panel3a.add(imgPathChooseButton);
+		panel3a.setLayout(new GridLayout(1, 2, 0, 0));
 		
-		panel3a.setLayout(new GridLayout(1, 2, 1, 1));
+		panel3.add(imgPathTextLabel);
+		panel3.add(panel3a);
+		panel3.setLayout(new GridLayout(2, 1, 0, 0));
+		panel3.setBorder(lineBorder);
 		
 		//sub-panel with text box and file select button
-		JPanel panel3b = new JPanel();
+		JPanel panel4 = new JPanel();
+		JLabel jsonPathTextLabel = new JLabel(" Location of the JSON file: ");
+
+		JPanel panel4a = new JPanel();
+
+		JPanel panel4b = new JPanel();
+		
 		jsonPath = "";
 		jsonPathText = new JTextField("");
 		jsonPathText.setEditable(false);
 		jsonPathChooseButton = new JButton("Change");
 		jsonPathChooseButton.addActionListener(this);
+		jsonPathClearButton = new JButton("Clear");
+		jsonPathClearButton.addActionListener(this);
 		jsonPathChooser = new JFileChooser(workingDirectory);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON FILES", "json");
 		jsonPathChooser.setFileFilter(filter);
 		jsonPathChooser.setAcceptAllFileFilterUsed(false);
 		
-		panel3b.add(jsonPathText);
-		panel3b.add(jsonPathChooseButton);
+		panel4b.add(jsonPathChooseButton);
+		panel4b.add(jsonPathClearButton);
+		panel4b.setLayout(new GridLayout(1, 2, 0, 0));
 		
-		panel3b.setLayout(new GridLayout(1, 2, 1, 1));
+		panel4a.add(jsonPathText);
+		panel4a.add(panel4b);
+		panel4a.setLayout(new GridLayout(1, 2, 0, 0));
+		
+		panel4.add(jsonPathTextLabel);
+		panel4.add(panel4a);
+		panel4.setLayout(new GridLayout(2, 1, 0, 0));
+		panel4.setBorder(lineBorder);
 		
 		
-		panel3.add(imgPathTextLabel);
-		panel3.add(jsonPathTextLabel);
-		panel3.add(panel3a);
-		panel3.add(panel3b);
 		
-		panel3.setLayout(new GridLayout(2, 4, 1, 1));
 		
 		//start button
 		startButton = new JButton("Create Barcode");
-		//startButton.setBounds(130, 100, 100, 40);
 		startButton.addActionListener(this);
 		progLabel = new JLabel("progress goes here");
-		JPanel panel4 = new JPanel();
-		panel4.add(startButton);
-		panel4.add(progLabel);
+		JPanel panel5 = new JPanel();
+		panel5.add(startButton);
+		panel5.add(progLabel);
+		panel5.setBorder(lineBorder);
 		
 		imgPanel = new JPanel();
+		imgPanel.setBorder(lineBorder);
 		
 		f.add(panel1);
 		f.add(panel2);
 		f.add(panel3);
 		f.add(panel4);
+		f.add(panel5);
 		f.add(imgPanel);
 		
-		f.setSize(400,  300);
-		f.setLayout(new GridLayout(5, 1, 0, 0));
+		f.setSize(400, 450);
+		f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}
 	
@@ -195,6 +220,13 @@ public class UserInterface extends JFrame implements ActionListener {
 				jsonPath = jsonPathChooser.getSelectedFile().getPath();
 				jsonPathText.setText(jsonPath);
 			}
+		}
+		
+		if (e.getSource() == jsonPathClearButton) {
+			hasJSON = false;
+			sortOptionBox.removeItem("Chronological");
+			jsonPathText.setText("");
+			jsonPath = "";
 		}
 		
 		//start button generates bar code
