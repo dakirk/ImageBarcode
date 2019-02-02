@@ -1,3 +1,8 @@
+/**
+ * @author David Kirk
+ * This project is available on GitHub: https://github.com/dakirk/ImageBarcode
+ */
+
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;

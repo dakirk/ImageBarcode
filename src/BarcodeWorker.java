@@ -1,3 +1,8 @@
+/**
+ * @author David Kirk
+ * This project is available on GitHub: https://github.com/dakirk/ImageBarcode
+ */
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
