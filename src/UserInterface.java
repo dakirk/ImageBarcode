@@ -20,20 +20,17 @@ public class UserInterface extends JFrame implements ActionListener {
 	String[] sortOptionsJSON = {"Hue", "Saturation", "Brightness", "Chronological"};
 	String[] enhanceOptions = {"Hue", "Saturation", "Brightness", "None"};
 	
-	String sortOption;
-	String enhanceOption;
-	int barWidth;
-	int imgHeight;
-	String imgPath;
-	String jsonPath;
+	String sortOption, enhanceOption;
+	int barWidth, imgHeight;
+	String imgPath, jsonPath, savePath;
 	boolean hasJSON;
 	
 	JLabel descriptionLabelSort, descriptionLabelEnhance, progLabel;
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
-	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText;
-	JButton startButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton;
-	JFileChooser imgPathChooser, jsonPathChooser;
+	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText, savePathText;
+	JButton startButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton, savePathChooseButton;
+	JFileChooser imgPathChooser, jsonPathChooser, savePathChooser;
 	JPanel imgPanel;
 	JProgressBar progBar;
 	 
@@ -157,16 +154,38 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel4.setBorder(lineBorder);
 		
 		
+		//panel for selecting file paths
+		JPanel panel5 = new JPanel();
+		JLabel savePathTextLabel = new JLabel(" Location to save barcode at: ");
 		
+		//sub-panel with text box and file select button
+		JPanel panel5a = new JPanel();
+		savePath = "images/barcode.png";
+		savePathText = new JTextField("images/barcode.png");
+		savePathText.setEditable(false);
+		savePathChooseButton = new JButton("Change");
+		savePathChooseButton.addActionListener(this);
+		savePathChooser = new JFileChooser(workingDirectory);
+		savePathChooser.setSelectedFile(new File("barcode.png"));
+		//savePathChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		panel5a.add(savePathText);
+		panel5a.add(savePathChooseButton);
+		panel5a.setLayout(new GridLayout(1, 2, 0, 0));
+		
+		panel5.add(savePathTextLabel);
+		panel5.add(panel5a);
+		panel5.setLayout(new GridLayout(2, 1, 0, 0));
+		panel5.setBorder(lineBorder);
 		
 		//start button
 		startButton = new JButton("Create Barcode");
 		startButton.addActionListener(this);
-		progLabel = new JLabel("progress goes here");
-		JPanel panel5 = new JPanel();
-		panel5.add(startButton);
-		panel5.add(progLabel);
-		panel5.setBorder(lineBorder);
+		progLabel = new JLabel("Ready");
+		JPanel panel6 = new JPanel();
+		panel6.add(startButton);
+		panel6.add(progLabel);
+		panel6.setBorder(lineBorder);
 		
 		imgPanel = new JPanel();
 		imgPanel.setBorder(lineBorder);
@@ -176,9 +195,10 @@ public class UserInterface extends JFrame implements ActionListener {
 		f.add(panel3);
 		f.add(panel4);
 		f.add(panel5);
+		f.add(panel6);
 		f.add(imgPanel);
 		
-		f.setSize(400, 450);
+		f.setSize(400, 500);
 		f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
@@ -189,13 +209,13 @@ public class UserInterface extends JFrame implements ActionListener {
 		//if sort method changes
 		if (e.getSource() == sortOptionBox) {
 			sortOption = (String)sortOptionBox.getSelectedItem();
-			System.out.println(sortOption);
+			//System.out.println(sortOption);
 		}
 		
 		//if enhance method changes
 		if (e.getSource() == enhanceOptionBox) {
 			enhanceOption = (String)enhanceOptionBox.getSelectedItem();
-			System.out.println(enhanceOption);
+			//System.out.println(enhanceOption);
 		}
 		
 		if (e.getSource() == imgPathChooseButton) {
@@ -229,6 +249,15 @@ public class UserInterface extends JFrame implements ActionListener {
 			jsonPath = "";
 		}
 		
+		if (e.getSource() == savePathChooseButton) {
+			int returnVal = savePathChooser.showSaveDialog(this);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				savePath = savePathChooser.getSelectedFile().getPath();
+				savePathText.setText(savePath);
+			}
+		}
+		
 		//start button generates bar code
 		if (e.getSource() == startButton) {
 			
@@ -260,7 +289,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			
 			startButton.setText("Loading...");
 			startButton.setEnabled(false);	
-			System.out.println(imgPath);
+			//System.out.println(imgPath);
 			
 			createBarcode();
 			
@@ -270,7 +299,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	public void createBarcode() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, progBar, progLabel);
+		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {

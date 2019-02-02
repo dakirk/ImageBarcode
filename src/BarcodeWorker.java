@@ -33,7 +33,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		}
 	}
 	
-	private final String sortOption, enhanceOption, imgPath, jsonPath; //drop-down menu choices
+	private final String sortOption, enhanceOption, imgPath, jsonPath, savePath; //drop-down menu choices
 	private final int barWidth, imgHeight;
 	private final boolean hasJSON;
 	private final JProgressBar progBar;
@@ -51,6 +51,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 						 final String imgPath,
 						 final boolean hasJSON,
 						 final String jsonPath,
+						 final String savePath,
 						 final JProgressBar progBar,
 						 final JLabel progLabel) {
 		this.sortOption = sortOption;
@@ -60,6 +61,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		this.hasJSON = hasJSON;
 		this.imgPath = imgPath;
 		this.jsonPath = jsonPath;
+		this.savePath = savePath;
 		this.progBar = progBar;
 		this.progLabel = progLabel;
 		
@@ -104,9 +106,9 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	
     	if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
         	publish("Sorting images...");
-    		System.out.print("\nSorting... ");
+    		//System.out.print("\nSorting... ");
     		sortAvgColorList(sortOption.toLowerCase());
-        	System.out.print("[DONE]");
+        	//System.out.print("[DONE]");
     	}
     	
     	failIfInterrupted();
@@ -114,7 +116,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	//enhance one color attribute if requested
     	if (!enhanceOption.equals("None")) {
         	publish("Adjusting HSB values...");
-    		System.out.print("\nAdjusting HSB values... ");
+    		//System.out.print("\nAdjusting HSB values... ");
     		switch(enhanceOption) {
     			case "Hue": 		adjustHSB(1.0, null, null);
     								break;
@@ -124,7 +126,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     								break;
     			default: 			break;
     		}
-        	System.out.print("[DONE]");
+        	//System.out.print("[DONE]");
     	}
     	
     	failIfInterrupted();
@@ -132,10 +134,10 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	//System.out.println("made it here");
 
     	publish("Generating and saving barcode...");
-    	System.out.print("\nGenerating and saving barcode... ");
+    	//System.out.print("\nGenerating and saving barcode... ");
     	//System.out.println(imgHeight);
-    	BufferedImage output = createBarcode("./barcode.png", barWidth, imgHeight);
-    	System.out.println("[DONE]");
+    	BufferedImage output = createBarcode(savePath, barWidth, imgHeight);
+    	//System.out.println("[DONE]");
     	
     	failIfInterrupted();
     	
@@ -161,17 +163,17 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     		//if valid image, read and add to ArrayList
     		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
     			try {
-    				System.out.print("\nLoading " + file.getName() + "... ");
+    				//System.out.print("\nLoading " + file.getName() + "... ");
     				InputStream tempStream = Files.newInputStream(Paths.get(file.getPath()));    				
     				BufferedImage tempImg = ImageIO.read(tempStream);
     				imgList.add(tempImg);
-           			System.out.print("[DONE]");
+           			//System.out.print("[DONE]");
        			} catch (IOException e) {
-       				System.out.print("[FAILED]");
+       				//System.out.print("[FAILED]");
        				e.printStackTrace(System.out);
        			}
     		} else {
-    			System.out.print("\nNot an image: " + file.getName());
+    			//System.out.print("\nNot an image: " + file.getName());
     		}
     		
     		i++;
@@ -186,7 +188,6 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		try {
 			br = new BufferedReader(new FileReader(jsonPath));
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -197,7 +198,6 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 				jsonText += st;
 			}
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} 
     	
@@ -219,11 +219,11 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 
     		//if valid image, read and add to ArrayList
 			try {
-				System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
+				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
        			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(imgPath))));
-       			System.out.print("[DONE]");
+       			//System.out.print("[DONE]");
    			} catch (IOException e) {
-   				System.out.print("[FAILED]");
+   				//System.out.print("[FAILED]");
    				e.printStackTrace(System.out);
    			}
 
@@ -277,9 +277,9 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     		
     		publish("Averaging files (" + i + "/" + imgList.size() + ")");
     		
-    		System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
+    		//System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
     		avgColorList.add(averageColor(img));
-    		System.out.print("[DONE]");
+    		//System.out.print("[DONE]");
     		imgCount++;
     		//System.out.println("made an avg");
     		i++;
@@ -347,7 +347,10 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 			File outputFile = new File(savePath);
 			ImageIO.write(output, "png", outputFile);
 		} catch (IOException e) {
-			System.out.print("\nSaving failed");
+			//System.out.print("\nSaving failed");
+			publish("Saving failed");
+			e.printStackTrace(System.out);
+
 		}
 		
 		return output;
