@@ -6,6 +6,7 @@ import javax.imageio.*;
 import java.util.*;
 import java.nio.file.*;
 import org.json.*;
+import org.apache.commons.io.*;
  
 /**
  * This class demonstrates how to load an Image from an external file
@@ -26,11 +27,15 @@ public class BarcodeMaker {
 
     public void loadImagesFromFolder(String folderPath) {
     	File folder = new File(folderPath);
-    	File[] fileList = folder.listFiles();
+    	//File[] fileList = folder.listFiles();
+    	
+    	//get all files in folder and subfolders recursively
+    	Collection<File> fileCollection = (FileUtils.listFiles(new File(folderPath), null, true));
+    	File[] fileList = fileCollection.toArray(new File[fileCollection.size()]);
+    	System.out.println(fileCollection.size());
     	
     	//load all images
     	for (File file : fileList) {
-
     		int lastFourIndex = file.getName().length()-4;
     		String lastFourChars = file.getName().substring(lastFourIndex);
 
@@ -77,11 +82,14 @@ public class BarcodeMaker {
 		JSONObject jsonObj = new JSONObject(jsonReader);
 		JSONArray jsonArr = jsonObj.getJSONArray("photos");
 		
+		
+		
 		for (int i = 0; i < jsonArr.length(); i++) {
 			
 			//find file name for this image
 			JSONObject imgData = jsonArr.getJSONObject(i);
-			String imgName = imgData.getString("path").split("/")[2]; //get 3rd item
+			//String imgName = imgData.getString("path").split("/")[2]; //get 3rd item
+			String imgName = imgData.getString("path");
 			String imgPath = folderPath + "/" + imgName;
 
     		//if valid image, read and add to ArrayList

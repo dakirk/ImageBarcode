@@ -3,6 +3,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.*;
@@ -25,13 +26,14 @@ public class UserInterface extends JFrame implements ActionListener {
 	String jsonPath;
 	boolean hasJSON;
 	
-	JLabel descriptionLabelSort, descriptionLabelEnhance;
+	JLabel descriptionLabelSort, descriptionLabelEnhance, progLabel;
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText;
 	JButton startButton, imgPathChooseButton, jsonPathChooseButton;
 	JFileChooser imgPathChooser, jsonPathChooser;
 	JPanel imgPanel;
+	JProgressBar progBar;
 	 
 	
 	UserInterface() {
@@ -139,8 +141,10 @@ public class UserInterface extends JFrame implements ActionListener {
 		startButton = new JButton("Create Barcode");
 		//startButton.setBounds(130, 100, 100, 40);
 		startButton.addActionListener(this);
+		progLabel = new JLabel("progress goes here");
 		JPanel panel4 = new JPanel();
 		panel4.add(startButton);
+		panel4.add(progLabel);
 		
 		imgPanel = new JPanel();
 		
@@ -182,8 +186,12 @@ public class UserInterface extends JFrame implements ActionListener {
 			int returnVal = jsonPathChooser.showOpenDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				hasJSON = true;
-				sortOptionBox.addItem("Chronological");
+				
+				//if not already marked as having JSON
+				if (!hasJSON) {
+					sortOptionBox.addItem("Chronological");
+					hasJSON = true;
+				}
 				jsonPath = jsonPathChooser.getSelectedFile().getPath();
 				jsonPathText.setText(jsonPath);
 			}
@@ -230,7 +238,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	public void createBarcode() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath);
+		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, progBar, progLabel);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -252,9 +260,12 @@ public class UserInterface extends JFrame implements ActionListener {
 							imgPanel.removeAll();
 							imgPanel.updateUI();
 							imgPanel.add(picLabel);
-						} catch (Exception e) {
-							JOptionPane.showMessageDialog(null, "Invalid JSON file. Please make sure this JSON file corresponds to your selected images.");
-							e.printStackTrace(System.out);						}
+						} catch (ExecutionException e) {
+							JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
+							e.printStackTrace(System.out);
+						} catch (InterruptedException e) {
+							JOptionPane.showMessageDialog(null, "Image generation was interrupted.");
+						}
 					}
 				}
 				

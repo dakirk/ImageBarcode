@@ -1,5 +1,8 @@
+import java.util.List;
 import java.awt.image.BufferedImage;
 
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
 //based on: http://www.javacreed.com/swing-worker-example/
@@ -14,16 +17,40 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 	private final String sortOption, enhanceOption, imgPath, jsonPath; //drop-down menu choices
 	private final int barWidth, imgHeight;
 	private final boolean hasJSON;
+	private final JProgressBar progBar;
+	private final JLabel progLabel;
 	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public BarcodeWorker(final String sortOption, final String enhanceOption, final int barWidth, final int imgHeight, final String imgPath, final boolean hasJSON, final String jsonPath) {
+	public BarcodeWorker(final String sortOption,
+						 final String enhanceOption,
+						 final int barWidth,
+						 final int imgHeight,
+						 final String imgPath,
+						 final boolean hasJSON,
+						 final String jsonPath,
+						 final JProgressBar progBar,
+						 final JLabel progLabel) {
 		this.sortOption = sortOption;
 		this.enhanceOption = enhanceOption;
 		this.barWidth = barWidth;
 		this.imgHeight = imgHeight;
 		this.hasJSON = hasJSON;
 		this.imgPath = imgPath;
-		this.jsonPath = jsonPath;	
+		this.jsonPath = jsonPath;
+		this.progBar = progBar;
+		this.progLabel = progLabel;
+		
+	}
+	
+	@Override
+	protected void process(List<String> chunks) {
+		progLabel.setText(chunks.get(chunks.size()-1));
+		return;
+	}
+	
+	@Override
+	protected void done() {
+		progLabel.setText("Done!");
 	}
 	
 	@Override
