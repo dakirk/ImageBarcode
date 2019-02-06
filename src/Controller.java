@@ -2,8 +2,12 @@
 //import javax.swing.UnsupportedLookAndFeelException;
 
 /**
+ * This class contains the main method and runs UserInterface. In the future it may also set the look and feel,
+ * if I find one I like.
+ * 
  * @author David Kirk
- * This project is available on GitHub: https://github.com/dakirk/ImageBarcode
+ * @version 1.0
+ * @since 1.0
  */
 
 public class Controller {
