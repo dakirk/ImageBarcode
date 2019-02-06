@@ -31,10 +31,10 @@ public class UserInterface extends JFrame implements ActionListener {
 	String imgPath, jsonPath, savePath;
 	boolean hasJSON;
 	
-	JLabel descriptionLabelSort, descriptionLabelEnhance, progLabel;
+	JLabel descriptionLabelSort, descriptionLabelEnhance, imgPathText, jsonPathText, savePathText, progLabel;
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
-	JTextField barWidthBox, imgHeightBox, imgPathText, jsonPathText, savePathText;
+	JTextField barWidthBox, imgHeightBox;
 	JButton startButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton, savePathChooseButton;
 	JFileChooser imgPathChooser, jsonPathChooser, savePathChooser;
 	JPanel imgPanel;
@@ -109,8 +109,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		//sub-panel with text box and file select button
 		JPanel panel3a = new JPanel();
 		imgPath = "images/";
-		imgPathText = new JTextField("images/");
-		imgPathText.setEditable(false);
+		imgPathText = new JLabel(" images/");
 		imgPathChooseButton = new JButton("Change");
 		imgPathChooseButton.addActionListener(this);
 		imgPathChooser = new JFileChooser(workingDirectory);
@@ -134,8 +133,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		JPanel panel4b = new JPanel();
 		
 		jsonPath = "";
-		jsonPathText = new JTextField("");
-		jsonPathText.setEditable(false);
+		jsonPathText = new JLabel(" None selected");
+		jsonPathText.setForeground(Color.gray);
 		jsonPathChooseButton = new JButton("Change");
 		jsonPathChooseButton.addActionListener(this);
 		jsonPathClearButton = new JButton("Clear");
@@ -166,8 +165,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		//sub-panel with text box and file select button
 		JPanel panel5a = new JPanel();
 		savePath = "images/barcode.png";
-		savePathText = new JTextField("images/barcode.png");
-		savePathText.setEditable(false);
+		savePathText = new JLabel(" images/barcode.png");
 		savePathChooseButton = new JButton("Change");
 		savePathChooseButton.addActionListener(this);
 		savePathChooser = new JFileChooser(workingDirectory);
@@ -194,6 +192,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		imgPanel = new JPanel();
 		imgPanel.setBorder(lineBorder);
+		JScrollPane imgScrollPane = new JScrollPane(imgPanel);
 		
 		f.add(panel1);
 		f.add(panel2);
@@ -201,7 +200,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		f.add(panel4);
 		f.add(panel5);
 		f.add(panel6);
-		f.add(imgPanel);
+		f.add(imgScrollPane);
 		
 		f.setSize(400, 500);
 		f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
@@ -233,7 +232,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				imgPath = imgPathChooser.getSelectedFile().getPath();
-				imgPathText.setText(imgPath);
+				imgPathText.setText(" " + imgPath);
 			}
 		}
 		
@@ -249,7 +248,8 @@ public class UserInterface extends JFrame implements ActionListener {
 					hasJSON = true;
 				}
 				jsonPath = jsonPathChooser.getSelectedFile().getPath();
-				jsonPathText.setText(jsonPath);
+				jsonPathText.setText(" " + jsonPath);
+				jsonPathText.setForeground(Color.black);
 			}
 		}
 		
@@ -257,7 +257,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		if (e.getSource() == jsonPathClearButton) {
 			hasJSON = false;
 			sortOptionBox.removeItem("Chronological");
-			jsonPathText.setText("");
+			jsonPathText.setText(" None selected");
+			jsonPathText.setForeground(Color.red);
 			jsonPath = "";
 		}
 		
@@ -267,7 +268,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				savePath = savePathChooser.getSelectedFile().getPath();
-				savePathText.setText(savePath);
+				savePathText.setText(" " + savePath);
 			}
 		}
 		
