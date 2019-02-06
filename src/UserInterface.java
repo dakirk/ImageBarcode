@@ -1,6 +1,9 @@
 /**
+ * This class renders the user interface of this program using Java's built-in Swing elements.
+ * 
  * @author David Kirk
- * This project is available on GitHub: https://github.com/dakirk/ImageBarcode
+ * @version 1.0
+ * @since 1.0
  */
 
 import java.awt.event.*;
@@ -15,6 +18,7 @@ import javax.swing.SwingWorker.StateValue;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 public class UserInterface extends JFrame implements ActionListener {
 	
 	
@@ -36,7 +40,6 @@ public class UserInterface extends JFrame implements ActionListener {
 	JPanel imgPanel;
 	JProgressBar progBar;
 	 
-	
 	UserInterface() {
 		f = new JFrame();
 		hasJSON = false;
@@ -206,6 +209,10 @@ public class UserInterface extends JFrame implements ActionListener {
 		f.setVisible(true);
 	}
 	
+	/**
+	 * This method is required by the ActionListener interface. It runs every time a UI action occurs.
+	 * @param e This is the action that has been performed
+	 */
 	public void actionPerformed (ActionEvent e) {
 		
 		//if sort method changes
@@ -220,6 +227,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			//System.out.println(enhanceOption);
 		}
 		
+		//if the image path's "choose" button is pressed
 		if (e.getSource() == imgPathChooseButton) {
 			int returnVal = imgPathChooser.showOpenDialog(this);
 			
@@ -229,6 +237,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 		}
 		
+		//if the json path's "choose" button is pressed
 		if (e.getSource() == jsonPathChooseButton) {
 			int returnVal = jsonPathChooser.showOpenDialog(this);
 			
@@ -244,6 +253,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 		}
 		
+		//if the json path's "clear" button is pressed
 		if (e.getSource() == jsonPathClearButton) {
 			hasJSON = false;
 			sortOptionBox.removeItem("Chronological");
@@ -251,6 +261,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			jsonPath = "";
 		}
 		
+		//if the save path's "choose" button is pressed
 		if (e.getSource() == savePathChooseButton) {
 			int returnVal = savePathChooser.showSaveDialog(this);
 			
@@ -299,6 +310,9 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 	}
 	
+	/**
+	 * This method runs the BarcodeWorker tasks in a new thread, and listens for updates.
+	 */
 	public void createBarcode() {
 		
 		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
