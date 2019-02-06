@@ -1,8 +1,3 @@
-/**
- * @author David Kirk
- * This project is available on GitHub: https://github.com/dakirk/ImageBarcode
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -29,7 +24,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-//based on: http://www.javacreed.com/swing-worker-example/
+
+/**
+ * This class imports images, generates a barcode from them, and
+ * saves the barcode. It inherits from SwingWorker in order to run
+ * in the background.
+ * <p>
+ * SwingWorker elements based on: http://www.javacreed.com/swing-worker-example/
+ * 
+ * @author David Kirk
+ * @version 1.0
+ * @since 1.0
+ */
 public class BarcodeWorker extends SwingWorker<BufferedImage, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
@@ -75,17 +81,29 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		
 	}
 	
+	
+	/**
+	 * This method allows this SwingWorker to return status text.
+	 * @param chunks The data produced by the publish() method
+	 */
 	@Override
 	protected void process(List<String> chunks) {
 		progLabel.setText(chunks.get(chunks.size()-1));
 		return;
 	}
-	
+	/**
+	 * This method runs when the doInBackground method finishes. Currently not used.
+	 */
 	@Override
 	protected void done() {
 		progLabel.setText("Done!");
 	}
 	
+	/**
+	 * This is the method that runs all of the barcode generation code. It will run in a separate thread
+	 * from the Swing UI and therefore will not cause it to freeze.
+	 * @return BufferedImage The completed barcode
+	 */
 	@Override
 	protected BufferedImage doInBackground() throws Exception {
 		
@@ -149,7 +167,11 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	return output; //successful completion
 	}
 	
-	
+	/**
+	 * This method loads an unordered set of images from a folder and its subfolders. It
+	 * accepts only JPGs and PNGs, and stores them in imgList.
+	 * @param folderPath This is the path for the folder containing images to be loaded
+	 */
 	public void loadImagesFromFolder(String folderPath) {
     	File folder = new File(folderPath);
     	//File[] fileList = folder.listFiles();
@@ -185,7 +207,13 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	}
     }
     
-    //loads images given JSON for dates--assumes all images match the JSON file and are in the "images" folder
+	/**
+	 * This method loads an ordered set of images as described by the media.json file provided by Instagram image downloads.
+	 * It assumes that the relative paths provided by that file are correct, so it will only work when folderPath is the root
+	 * folder for the download (usually named "username_dateDownloaded")
+	 * @param folderPath The root folder of the Instagram data download
+	 * @param jsonPath The path to the media.json file
+	 */
     public void loadImagesChronologically(String folderPath, String jsonPath) {
 
     	//read JSON file to get load order
@@ -236,10 +264,12 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 
     }
 
-    /* Obtained from Stack Overflow here: https://stackoverflow.com/questions/28162488/get-average-color-on-bufferedimage-and-bufferedimage-portion-as-fast-as-possible
-	 * Where bi is your image, (x0,y0) is your upper left coordinate, and (w,h)
-	 * are your width and height respectively
-	 */
+    /**
+     * This method averages the colors in a single image for later use in the barcode.
+     * Obtained from Stack Overflow here: https://stackoverflow.com/questions/28162488/get-average-color-on-bufferedimage-and-bufferedimage-portion-as-fast-as-possible
+     * @param img This is the image whose colors will be averaged
+     * @return Color The average color of img
+     */
 	private Color averageColor(BufferedImage img) {
 
 		int width = img.getWidth();
@@ -260,21 +290,13 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 
 	    return new Color(avgRed, avgGreen, avgBlue);
 	    
-	    //convert to HSB to manipulate hue, saturation, or brightness for neat effects
-	    //float[] avgHSB = Color.RGBtoHSB(avgRed, avgGreen, avgBlue, null);
-	    //return Color.getHSBColor(avgHSB[0], avgHSB[1], 1);
-
-	    //System.out.println("Red avg: " + avgRed);
-	    //System.out.println("Green avg: " + avgGreen);
-	    //System.out.println("Blue avg: " + avgBlue);
-
-	    //return new Color(avgRed, avgGreen, avgBlue);
 	}
 
-	//finds average of all images in imgList
+	/**
+	 * This method runs the averageColor function on all images in imgList and adds them to an internal
+	 * variable avgColorList.
+	 */
 	public void averageAll() {
-
-		int imgCount = 1;
 
     	//average each image and make a list of the averages
 		int i = 0;
@@ -285,13 +307,18 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     		//System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
     		avgColorList.add(averageColor(img));
     		//System.out.print("[DONE]");
-    		imgCount++;
-    		//System.out.println("made an avg");
     		i++;
     	}
 	}
 	
 	//if any argument is null, leave as-is
+	/**
+	 * This method modifies the colors in avgColorList according to the HSB color model.
+	 * All parameters are values between 0 and 1, and for now there is no input sanitization.
+	 * @param hue The new hue for all colors--if null, hues are not adjusted
+	 * @param saturation The new saturation for all colors--if null saturations are not adjusted
+	 * @param brightness The new brightness for all color--if null, hues are not adjusted
+	 */
 	public void adjustHSB(Double hue, Double saturation, Double brightness) {
 		
 		double finalHue;
@@ -332,7 +359,13 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 		
 	}
 
-	//must only be run after the images are loaded
+	/**
+	 * This method generates and saves the barcode in PNG format using the colors currently saved in avgColorList.
+	 * @param savePath The location for the saved barcode image
+	 * @param stripeWidth The width of each bar in the barcode, in pixels
+	 * @param imgHeight The height of the barcode, in pixels
+	 * @return BufferedImage The completed barcode, in a renderable form
+	 */
 	public BufferedImage createBarcode(String savePath, int stripeWidth, int imgHeight) {
 
 		int numStripes = avgColorList.size();
@@ -362,6 +395,11 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 	}
 
 	//sorts color list by hue, saturation, or brightness
+	/**
+	 * This method sorts the avgColorList by hue, saturation, or brightness, in decreasing order.
+	 * @param sortVar The type of sort to be executed. Currently supports "hue", "saturation", and "brightness"
+	 * @return boolean True if input was a valid sort parameter, or false otherwise
+	 */
 	public boolean sortAvgColorList(String sortVar) {
 		
 		int sortIndex;

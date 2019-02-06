@@ -11,12 +11,9 @@ import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.SwingWorker.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 public class UserInterface extends JFrame implements ActionListener {
 	
