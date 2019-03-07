@@ -258,8 +258,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		f.add(rightPanel);
 		
-		f.setSize(490, 600);
-		f.setMinimumSize(new Dimension(490, 600));
+		f.setSize(500, 600);
+		f.setMinimumSize(new Dimension(500, 600));
 		//f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
