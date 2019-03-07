@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.awt.*;
 import javax.swing.*;
@@ -21,6 +22,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class UserInterface extends JFrame implements ActionListener {
 	
+	final int panelWidth = 400; //preferred panel width
+	final int panelHeight = 60; //preferred panel height
 	
 	String[] sortOptionsNoJSON = {"Hue", "Saturation", "Brightness", "None"};
 	String[] sortOptionsJSON = {"Hue", "Saturation", "Brightness", "Chronological"};
@@ -43,8 +46,11 @@ public class UserInterface extends JFrame implements ActionListener {
 	UserInterface() {
 		f = new JFrame();
 		hasJSON = false;
-		Border lineBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		f.setLayout(new FlowLayout());
 
+		Border lineBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		
+		
 		
 		//drop-downs
 		
@@ -80,6 +86,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		panel1.add(enhanceOptionBox);
 		panel1.setBorder(lineBorder);
+		panel1.setPreferredSize(new Dimension(400, panelHeight));
+
 
 		
 		//text boxes
@@ -98,6 +106,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel2.add(imgHeightBox);
 		panel2.setLayout(new GridLayout(2, 2, 0, 0));
 		panel2.setBorder(lineBorder);
+		panel2.setPreferredSize(new Dimension(panelWidth, panelHeight));
+
 		
 		//used in upcoming panels
 		File workingDirectory = new File(System.getProperty("user.dir"));
@@ -112,6 +122,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		imgPathText = new JLabel(" images/");
 		imgPathChooseButton = new JButton("Change");
 		imgPathChooseButton.addActionListener(this);
+		imgPathChooseButton.setOpaque(false);
 		imgPathChooser = new JFileChooser(workingDirectory);
 		imgPathChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
@@ -123,6 +134,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel3.add(panel3a);
 		panel3.setLayout(new GridLayout(2, 1, 0, 0));
 		panel3.setBorder(lineBorder);
+		panel3.setPreferredSize(new Dimension(panelWidth, panelHeight));
+
 		
 		//sub-panel with text box and file select button
 		JPanel panel4 = new JPanel();
@@ -156,6 +169,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel4.add(panel4a);
 		panel4.setLayout(new GridLayout(2, 1, 0, 0));
 		panel4.setBorder(lineBorder);
+		panel4.setPreferredSize(new Dimension(panelWidth, panelHeight));
+
 		
 		
 		//panel for selecting file paths
@@ -180,6 +195,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel5.add(panel5a);
 		panel5.setLayout(new GridLayout(2, 1, 0, 0));
 		panel5.setBorder(lineBorder);
+		panel5.setPreferredSize(new Dimension(panelWidth, panelHeight));
+
 		
 		//start button
 		startButton = new JButton("Create Barcode");
@@ -189,21 +206,59 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel6.add(startButton);
 		panel6.add(progLabel);
 		panel6.setBorder(lineBorder);
+		panel6.setPreferredSize(new Dimension(panelWidth, panelHeight));
+
 		
 		imgPanel = new JPanel();
 		imgPanel.setBorder(lineBorder);
+		//imgPanel.setLayout(new GridBagLayout());
+		//imgPanel.setPreferredSize(new Dimension(panelWidth, 100));
+
 		JScrollPane imgScrollPane = new JScrollPane(imgPanel);
+		imgScrollPane.setPreferredSize(new Dimension(panelWidth, 100));
 		
-		f.add(panel1);
-		f.add(panel2);
-		f.add(panel3);
-		f.add(panel4);
-		f.add(panel5);
-		f.add(panel6);
-		f.add(imgScrollPane);
+		//left panel is for labels for the various steps
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 		
-		f.setSize(400, 500);
-		f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
+		//populate left panel--for now, 7 parts so i = 7, but may need to change later
+		for (int i = 1; i <= 7; i++) {
+			JPanel textPanel = new JPanel();
+			textPanel.setLayout(new GridBagLayout());
+			JLabel stepLabel;
+			
+			if (i == 7) {
+				textPanel.setPreferredSize(new Dimension(panelHeight, 100));
+				stepLabel = new JLabel(" Output: ");
+			} else {
+				textPanel.setPreferredSize(new Dimension(panelHeight, panelHeight));
+				stepLabel = new JLabel(" Step " + i + ": ");
+			}
+			
+			stepLabel.setFont(new Font("Dialog", Font.BOLD, 13));
+			textPanel.add(stepLabel);
+			leftPanel.add(textPanel);
+		}
+		
+		f.add(leftPanel);
+		
+		//right panel is all the controls for the program
+		JPanel rightPanel = new JPanel();
+		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+		
+		rightPanel.add(panel3);
+		rightPanel.add(panel4);
+		rightPanel.add(panel1);
+		rightPanel.add(panel2);
+		rightPanel.add(panel5);
+		rightPanel.add(panel6);
+		rightPanel.add(imgScrollPane);
+		
+		f.add(rightPanel);
+		
+		f.setSize(490, 500);
+		f.setMinimumSize(new Dimension(490, 500));
+		//f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}

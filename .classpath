@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="/Users/David/Desktop/College_Stuff/Instagram_Bar_Code/json-lib.jar"/>
-	<classpathentry kind="lib" path="/Users/David/Downloads/commons-io-2.6/commons-io-2.6.jar"/>
+	<classpathentry kind="lib" path="/Users/David/Documents/workspace/InstagramBarcode/libraries/json-lib.jar"/>
+	<classpathentry kind="lib" path="/Users/David/Documents/workspace/InstagramBarcode/libraries/commons-io-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
