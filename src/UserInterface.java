@@ -172,7 +172,6 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel4.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
-		
 		//panel for selecting file paths
 		JPanel panel5 = new JPanel();
 		JLabel savePathTextLabel = new JLabel(" Location to save barcode at: ");
@@ -198,7 +197,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel5.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
-		//start button
+		//panel for start button
 		startButton = new JButton("Create Barcode");
 		startButton.addActionListener(this);
 		progLabel = new JLabel("Ready");
@@ -209,13 +208,15 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel6.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
+		//panel for images
 		imgPanel = new JPanel();
 		imgPanel.setBorder(lineBorder);
-		//imgPanel.setLayout(new GridBagLayout());
-		//imgPanel.setPreferredSize(new Dimension(panelWidth, 100));
+		imgPanel.setLayout(new GridBagLayout());
 
+		//scrollbar for large images
 		JScrollPane imgScrollPane = new JScrollPane(imgPanel);
-		imgScrollPane.setPreferredSize(new Dimension(panelWidth, 100));
+		imgScrollPane.setPreferredSize(new Dimension(panelWidth, 200));
+		
 		
 		//left panel is for labels for the various steps
 		JPanel leftPanel = new JPanel();
@@ -227,8 +228,8 @@ public class UserInterface extends JFrame implements ActionListener {
 			textPanel.setLayout(new GridBagLayout());
 			JLabel stepLabel;
 			
-			if (i == 7) {
-				textPanel.setPreferredSize(new Dimension(panelHeight, 100));
+			if (i == 7) { //for imgPanel
+				textPanel.setPreferredSize(new Dimension(panelHeight, 200));
 				stepLabel = new JLabel(" Output: ");
 			} else {
 				textPanel.setPreferredSize(new Dimension(panelHeight, panelHeight));
@@ -241,6 +242,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 		
 		f.add(leftPanel);
+		
 		
 		//right panel is all the controls for the program
 		JPanel rightPanel = new JPanel();
@@ -256,8 +258,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		f.add(rightPanel);
 		
-		f.setSize(490, 500);
-		f.setMinimumSize(new Dimension(490, 500));
+		f.setSize(490, 600);
+		f.setMinimumSize(new Dimension(490, 600));
 		//f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
