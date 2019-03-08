@@ -11,9 +11,12 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.awt.*;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.border.Border;
@@ -24,7 +27,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	final int panelWidth = 400; //preferred panel width
 	final int panelHeight = 60; //preferred panel height
-	final int numPanelRows = 8; //number of rows of panels
+	final int numPanelRows = 7; //number of rows of panels
 	
 	String[] sortOptionsNoJSON = {"Hue", "Saturation", "Brightness", "None"};
 	String[] sortOptionsJSON = {"Hue", "Saturation", "Brightness", "Chronological"};
@@ -45,6 +48,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	JProgressBar progBar;
 	
 	ArrayList<Color> colorList;
+	BufferedImage barcode;
 	 
 	UserInterface() {
 		f = new JFrame();
@@ -77,6 +81,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 		//sortOptionBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		sortOptionBox.addActionListener(this);
+		sortOptionBox.setEnabled(false);	
+
 		
 		panel1.add(sortOptionBox);
 		
@@ -86,6 +92,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		enhanceOptionBox.addActionListener(this);
 		enhanceOptionBox.setSelectedItem("None");
 		enhanceOption = "None";
+		enhanceOptionBox.setEnabled(false);
 		
 		panel1.add(enhanceOptionBox);
 		panel1.setBorder(lineBorder);
@@ -99,8 +106,10 @@ public class UserInterface extends JFrame implements ActionListener {
 		JLabel imgHeightBoxLabel = new JLabel(" Image Height: ");
 		
 		barWidthBox = new JTextField("1");
+		barWidthBox.setEnabled(false);
 		barWidth = 1;
 		imgHeightBox = new JTextField("100");
+		imgHeightBox.setEnabled(false);
 		imgHeight = 100;
 		
 		panel2.add(barWidthBoxLabel);
@@ -175,31 +184,6 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel4.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
-		//panel for selecting file paths
-		JPanel panel5 = new JPanel();
-		JLabel savePathTextLabel = new JLabel(" Location to save barcode at: ");
-		
-		//sub-panel with text box and file select button
-		JPanel panel5a = new JPanel();
-		savePath = "images/barcode.png";
-		savePathText = new JLabel(" images/barcode.png");
-		savePathChooseButton = new JButton("Change");
-		savePathChooseButton.addActionListener(this);
-		savePathChooser = new JFileChooser(workingDirectory);
-		savePathChooser.setSelectedFile(new File("barcode.png"));
-		//savePathChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		
-		panel5a.add(savePathText);
-		panel5a.add(savePathChooseButton);
-		panel5a.setLayout(new GridLayout(1, 2, 0, 0));
-		
-		panel5.add(savePathTextLabel);
-		panel5.add(panel5a);
-		panel5.setLayout(new GridLayout(2, 1, 0, 0));
-		panel5.setBorder(lineBorder);
-		panel5.setPreferredSize(new Dimension(panelWidth, panelHeight));
-
-		
 		//panel for load button
 		loadButton = new JButton("Load Images");
 		loadButton.addActionListener(this);
@@ -214,11 +198,20 @@ public class UserInterface extends JFrame implements ActionListener {
 		//panel for generate button
 		genButton = new JButton("Generate Barcode");
 		genButton.addActionListener(this);
+		genButton.setEnabled(false);
 		JLabel genLabel = new JLabel("Ready", SwingConstants.CENTER);
 		JPanel panel7 = new JPanel();
+		
+		savePath = System.getProperty("user.dir") + "barcode.png";
+		savePathChooseButton = new JButton("Save Barcode");
+		savePathChooseButton.addActionListener(this);
+		savePathChooseButton.setEnabled(false);
+		savePathChooser = new JFileChooser(workingDirectory);
+		savePathChooser.setSelectedFile(new File("barcode.png"));
+		
 		panel7.setLayout(new GridLayout(2, 1, 0, 0));
 		panel7.add(genButton);
-		panel7.add(genLabel);
+		panel7.add(savePathChooseButton);
 		panel7.setBorder(lineBorder);
 		panel7.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
@@ -268,14 +261,13 @@ public class UserInterface extends JFrame implements ActionListener {
 		rightPanel.add(panel6);
 		rightPanel.add(panel1);
 		rightPanel.add(panel2);
-		rightPanel.add(panel5);
 		rightPanel.add(panel7);
 		rightPanel.add(imgScrollPane);
 		
 		f.add(rightPanel);
 		
-		f.setSize(500, 660);
-		f.setMinimumSize(new Dimension(500, 660));
+		f.setSize(500, 600);
+		f.setMinimumSize(new Dimension(500, 600));
 		//f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
@@ -316,10 +308,9 @@ public class UserInterface extends JFrame implements ActionListener {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				
 				//if not already marked as having JSON
-				if (!hasJSON) {
-					sortOptionBox.addItem("Chronological");
-					hasJSON = true;
-				}
+				sortOptionBox.addItem("Chronological");
+				sortOptionBox.removeItem("None");
+				hasJSON = true;
 				jsonPath = jsonPathChooser.getSelectedFile().getPath();
 				jsonPathText.setText(" " + jsonPath);
 				jsonPathText.setForeground(Color.black);
@@ -328,10 +319,11 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		//if the json path's "clear" button is pressed
 		if (e.getSource() == jsonPathClearButton) {
-			hasJSON = false;
 			sortOptionBox.removeItem("Chronological");
+			sortOptionBox.addItem("None");
+			hasJSON = false;
 			jsonPathText.setText(" None selected");
-			jsonPathText.setForeground(Color.red);
+			jsonPathText.setForeground(Color.gray);
 			jsonPath = "";
 		}
 		
@@ -341,12 +333,31 @@ public class UserInterface extends JFrame implements ActionListener {
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				savePath = savePathChooser.getSelectedFile().getPath();
-				savePathText.setText(" " + savePath);
+				System.out.println(savePath);
+				//save image
+				try {
+					File outputFile = new File(savePath);
+					ImageIO.write(barcode, "png", outputFile);
+				} catch (IOException ex) {
+					//System.out.print("\nSaving failed");
+					ex.printStackTrace(System.out);
+
+				}
 			}
 		}
 		
 		//start button generates bar code
 		if (e.getSource() == loadButton) {
+
+			loadButton.setText("Loading...");
+			loadButton.setEnabled(false);	
+			//System.out.println(imgPath);
+			
+			loadImages();
+			
+		}
+		
+		if (e.getSource() == genButton) {
 			
 			//check validity of bar width text box
 			try {
@@ -374,13 +385,21 @@ public class UserInterface extends JFrame implements ActionListener {
 				return;
 			}
 			
-			loadButton.setText("Loading...");
-			loadButton.setEnabled(false);	
-			//System.out.println(imgPath);
+			//make a deep copy to preserve the original arraylist
+			ArrayList<Color> tempColorList = new ArrayList<Color>();
+			for(Color c : colorList) {
+			    tempColorList.add(new Color(c.getRed(), c.getGreen(), c.getBlue()));
+			}
 			
-			loadImages();
+			//render barcode
+			barcode = BarcodeGenerator.generate(tempColorList, savePath, sortOption, enhanceOption, barWidth, imgHeight);
+			JLabel picLabel = new JLabel(new ImageIcon(barcode));
+			imgPanel.removeAll();
+			imgPanel.updateUI();
+			imgPanel.add(picLabel);
 			
-			
+			savePathChooseButton.setEnabled(true);
+		
 		}
 	}
 	
@@ -389,7 +408,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	 */
 	public void loadImages() {
 		
-		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
+		ImageLoadWorker bworker = new ImageLoadWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -406,11 +425,23 @@ public class UserInterface extends JFrame implements ActionListener {
 						
 						
 						try {
-							colorList = bworker.get();
-							//JLabel picLabel = new JLabel(new ImageIcon(output));
-							//imgPanel.removeAll();
-							//imgPanel.updateUI();
-							//imgPanel.add(picLabel);
+							ArrayList<Color> tempColorList = bworker.get();
+							
+							if (tempColorList.size() > 0) { //if loading was successful
+								colorList = tempColorList;
+								
+								//enable barcode settings
+								sortOptionBox.setEnabled(true);
+								enhanceOptionBox.setEnabled(true);
+								barWidthBox.setEnabled(true);
+								imgHeightBox.setEnabled(true);
+								genButton.setEnabled(true);
+								
+							} else {
+								JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
+								
+							}
+							
 						} catch (ExecutionException e) {
 							JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
 							e.printStackTrace(System.out);

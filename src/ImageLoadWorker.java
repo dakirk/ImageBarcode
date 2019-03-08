@@ -33,10 +33,10 @@ import org.json.JSONTokener;
  * SwingWorker elements based on: http://www.javacreed.com/swing-worker-example/
  * 
  * @author David Kirk
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
-public class BarcodeWorker extends SwingWorker<ArrayList<Color>, String> { 
+public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -55,7 +55,7 @@ public class BarcodeWorker extends SwingWorker<ArrayList<Color>, String> {
     private BufferedImage output;
 	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public BarcodeWorker(final String sortOption,
+	public ImageLoadWorker(final String sortOption,
 						 final String enhanceOption,
 						 final int barWidth,
 						 final int imgHeight,
