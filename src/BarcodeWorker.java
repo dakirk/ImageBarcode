@@ -179,7 +179,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	//get all files in folder and subfolders recursively
     	Collection<File> fileCollection = (FileUtils.listFiles(new File(folderPath), null, true));
     	File[] fileList = fileCollection.toArray(new File[fileCollection.size()]);
-    	
+    	ImageIO.setUseCache(false);
     	//load all images
     	int i = 0;
     	for (File file : fileList) {
