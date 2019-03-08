@@ -36,7 +36,7 @@ import org.json.JSONTokener;
  * @version 1.0
  * @since 1.0
  */
-public class BarcodeWorker extends SwingWorker<BufferedImage, String> { 
+public class BarcodeWorker extends SwingWorker<ArrayList<Color>, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -105,7 +105,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
 	 * @return BufferedImage The completed barcode
 	 */
 	@Override
-	protected BufferedImage doInBackground() throws Exception {
+	protected ArrayList<Color> doInBackground() throws Exception {
 		
 		//BarcodeMaker barcodeGen = new BarcodeMaker();
 
@@ -126,7 +126,7 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	failIfInterrupted();
     	
     	//sort if necessary
-    	
+    	/*
     	if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
         	publish("Sorting images...");
     		//System.out.print("\nSorting... ");
@@ -163,8 +163,8 @@ public class BarcodeWorker extends SwingWorker<BufferedImage, String> {
     	//System.out.println("[DONE]");
     	
     	failIfInterrupted();
-    	
-    	return output; //successful completion
+    	*/
+    	return avgColorList; //successful completion
 	}
 	
 	/**

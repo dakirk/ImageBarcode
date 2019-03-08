@@ -24,6 +24,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	final int panelWidth = 400; //preferred panel width
 	final int panelHeight = 60; //preferred panel height
+	final int numPanelRows = 8; //number of rows of panels
 	
 	String[] sortOptionsNoJSON = {"Hue", "Saturation", "Brightness", "None"};
 	String[] sortOptionsJSON = {"Hue", "Saturation", "Brightness", "Chronological"};
@@ -38,10 +39,12 @@ public class UserInterface extends JFrame implements ActionListener {
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox;
-	JButton startButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton, savePathChooseButton;
+	JButton loadButton, genButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton, savePathChooseButton;
 	JFileChooser imgPathChooser, jsonPathChooser, savePathChooser;
 	JPanel imgPanel;
 	JProgressBar progBar;
+	
+	ArrayList<Color> colorList;
 	 
 	UserInterface() {
 		f = new JFrame();
@@ -197,15 +200,27 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel5.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
-		//panel for start button
-		startButton = new JButton("Create Barcode");
-		startButton.addActionListener(this);
-		progLabel = new JLabel("Ready");
+		//panel for load button
+		loadButton = new JButton("Load Images");
+		loadButton.addActionListener(this);
+		progLabel = new JLabel("Ready", SwingConstants.CENTER);
 		JPanel panel6 = new JPanel();
-		panel6.add(startButton);
+		panel6.setLayout(new GridLayout(2, 1, 0, 0));
+		panel6.add(loadButton);
 		panel6.add(progLabel);
 		panel6.setBorder(lineBorder);
 		panel6.setPreferredSize(new Dimension(panelWidth, panelHeight));
+		
+		//panel for generate button
+		genButton = new JButton("Generate Barcode");
+		genButton.addActionListener(this);
+		JLabel genLabel = new JLabel("Ready", SwingConstants.CENTER);
+		JPanel panel7 = new JPanel();
+		panel7.setLayout(new GridLayout(2, 1, 0, 0));
+		panel7.add(genButton);
+		panel7.add(genLabel);
+		panel7.setBorder(lineBorder);
+		panel7.setPreferredSize(new Dimension(panelWidth, panelHeight));
 
 		
 		//panel for images
@@ -223,12 +238,12 @@ public class UserInterface extends JFrame implements ActionListener {
 		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 		
 		//populate left panel--for now, 7 parts so i = 7, but may need to change later
-		for (int i = 1; i <= 7; i++) {
+		for (int i = 1; i <= numPanelRows; i++) {
 			JPanel textPanel = new JPanel();
 			textPanel.setLayout(new GridBagLayout());
 			JLabel stepLabel;
 			
-			if (i == 7) { //for imgPanel
+			if (i == numPanelRows) { //for imgPanel
 				textPanel.setPreferredSize(new Dimension(panelHeight, 200));
 				stepLabel = new JLabel(" Output: ");
 			} else {
@@ -250,16 +265,17 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		rightPanel.add(panel3);
 		rightPanel.add(panel4);
+		rightPanel.add(panel6);
 		rightPanel.add(panel1);
 		rightPanel.add(panel2);
 		rightPanel.add(panel5);
-		rightPanel.add(panel6);
+		rightPanel.add(panel7);
 		rightPanel.add(imgScrollPane);
 		
 		f.add(rightPanel);
 		
-		f.setSize(500, 600);
-		f.setMinimumSize(new Dimension(500, 600));
+		f.setSize(500, 660);
+		f.setMinimumSize(new Dimension(500, 660));
 		//f.setLayout(new BoxLayout(f.getContentPane(), BoxLayout.Y_AXIS));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
@@ -330,7 +346,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		}
 		
 		//start button generates bar code
-		if (e.getSource() == startButton) {
+		if (e.getSource() == loadButton) {
 			
 			//check validity of bar width text box
 			try {
@@ -358,11 +374,11 @@ public class UserInterface extends JFrame implements ActionListener {
 				return;
 			}
 			
-			startButton.setText("Loading...");
-			startButton.setEnabled(false);	
+			loadButton.setText("Loading...");
+			loadButton.setEnabled(false);	
 			//System.out.println(imgPath);
 			
-			createBarcode();
+			loadImages();
 			
 			
 		}
@@ -371,7 +387,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	/**
 	 * This method runs the BarcodeWorker tasks in a new thread, and listens for updates.
 	 */
-	public void createBarcode() {
+	public void loadImages() {
 		
 		BarcodeWorker bworker = new BarcodeWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
 		
@@ -385,16 +401,16 @@ public class UserInterface extends JFrame implements ActionListener {
 					
 					//if processing over, reset button
 					if ((StateValue)event.getNewValue() == StateValue.DONE) {
-						startButton.setEnabled(true);
-						startButton.setText("Create Barcode");
+						loadButton.setEnabled(true);
+						loadButton.setText("Load Images");
 						
 						
 						try {
-							BufferedImage output = bworker.get();
-							JLabel picLabel = new JLabel(new ImageIcon(output));
-							imgPanel.removeAll();
-							imgPanel.updateUI();
-							imgPanel.add(picLabel);
+							colorList = bworker.get();
+							//JLabel picLabel = new JLabel(new ImageIcon(output));
+							//imgPanel.removeAll();
+							//imgPanel.updateUI();
+							//imgPanel.add(picLabel);
 						} catch (ExecutionException e) {
 							JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
 							e.printStackTrace(System.out);
