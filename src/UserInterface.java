@@ -2,7 +2,7 @@
  * This class renders the user interface of this program using Java's built-in Swing elements.
  * 
  * @author David Kirk
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 
@@ -38,7 +38,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	String imgPath, jsonPath, savePath;
 	boolean hasJSON;
 	
-	JLabel descriptionLabelSort, descriptionLabelEnhance, imgPathText, jsonPathText, savePathText, progLabel;
+	JLabel descriptionLabelSort, descriptionLabelEnhance, barWidthBoxLabel, imgHeightBoxLabel, imgPathText, jsonPathText, savePathText, progLabel;
 	JFrame f;
 	JComboBox sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox;
@@ -63,11 +63,14 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		JPanel panel1 = new JPanel(new GridLayout(2, 2, 0, 0));
 		descriptionLabelSort = new JLabel(" Select sorting method: ");
+		descriptionLabelSort.setForeground(Color.gray);
+
 		descriptionLabelSort.setOpaque(false);
 		panel1.add(descriptionLabelSort);
 		
 		descriptionLabelEnhance = new JLabel(" Select a value to enhance: ");	
 		descriptionLabelEnhance.setOpaque(false);
+		descriptionLabelEnhance.setForeground(Color.gray);
 		panel1.add(descriptionLabelEnhance);
 		
 		if (hasJSON) { 
@@ -102,8 +105,10 @@ public class UserInterface extends JFrame implements ActionListener {
 		
 		//text boxes
 		JPanel panel2 = new JPanel();
-		JLabel barWidthBoxLabel = new JLabel(" Bar width: ");
-		JLabel imgHeightBoxLabel = new JLabel(" Image Height: ");
+		barWidthBoxLabel = new JLabel(" Bar width: ");
+		barWidthBoxLabel.setForeground(Color.gray);
+		imgHeightBoxLabel = new JLabel(" Image Height: ");
+		imgHeightBoxLabel.setForeground(Color.gray);
 		
 		barWidthBox = new JTextField("1");
 		barWidthBox.setEnabled(false);
@@ -392,7 +397,7 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 			
 			//render barcode
-			barcode = BarcodeGenerator.generate(tempColorList, savePath, sortOption, enhanceOption, barWidth, imgHeight);
+			barcode = BarcodeGenerator.generate(tempColorList, sortOption, enhanceOption, barWidth, imgHeight);
 			JLabel picLabel = new JLabel(new ImageIcon(barcode));
 			imgPanel.removeAll();
 			imgPanel.updateUI();
@@ -436,6 +441,11 @@ public class UserInterface extends JFrame implements ActionListener {
 								barWidthBox.setEnabled(true);
 								imgHeightBox.setEnabled(true);
 								genButton.setEnabled(true);
+								descriptionLabelSort.setForeground(Color.black);
+								descriptionLabelEnhance.setForeground(Color.black);
+								barWidthBoxLabel.setForeground(Color.black);
+								imgHeightBoxLabel.setForeground(Color.black);
+							
 								
 							} else {
 								JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");

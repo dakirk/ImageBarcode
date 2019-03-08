@@ -1,12 +1,16 @@
+/**
+ * This class generates a barcode from an ArrayList of colors.
+ * 
+ * @author David Kirk
+ * @version 1.2
+ * @since 1.2
+ */
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-
-import javax.imageio.ImageIO;
 
 public class BarcodeGenerator {
 
@@ -15,8 +19,18 @@ public class BarcodeGenerator {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static BufferedImage generate(ArrayList<Color> avgColorList, String savePath, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
+	/**
+	 * This method generates a barcode image given an ArrayList of colors
+	 * @param avgColorList the given color list
+	 * @param sortOption the sorting order for the colors
+	 * @param enhanceOption the enhancement setting for the colors
+	 * @param barWidth the width of each bar in the barcode (in pixels)
+	 * @param imgHeight the height of the barcode (in pixels)
+	 * @return the finished barcode as a png file
+	 */
+	public static BufferedImage generate(ArrayList<Color> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
 				
+		//sort the arraylist if necessary
 		if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
     		//System.out.print("\nSorting... ");
     		sortAvgColorList(avgColorList, sortOption.toLowerCase());
@@ -38,8 +52,8 @@ public class BarcodeGenerator {
         	//System.out.print("[DONE]");
     	}
     	
-    	//System.out.println(imgHeight);
-    	BufferedImage output = createBarcode(avgColorList, savePath, barWidth, imgHeight);
+    	//generate the image
+    	BufferedImage output = createBarcode(avgColorList, barWidth, imgHeight);
     	//System.out.println("[DONE]");
     	
     	return output;
@@ -52,6 +66,7 @@ public class BarcodeGenerator {
 	 * @param hue The new hue for all colors--if null, hues are not adjusted
 	 * @param saturation The new saturation for all colors--if null saturations are not adjusted
 	 * @param brightness The new brightness for all color--if null, hues are not adjusted
+	 * @return ArrayList<Color> the adjusted arraylist
 	 */
 	public static ArrayList<Color> adjustHSB(ArrayList<Color> sortedColorList, Double hue, Double saturation, Double brightness) {
 		
@@ -102,7 +117,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight The height of the barcode, in pixels
 	 * @return BufferedImage The completed barcode, in a renderable form
 	 */
-	public static BufferedImage createBarcode(ArrayList<Color> modifiedColorList, String savePath, int stripeWidth, int imgHeight) {
+	public static BufferedImage createBarcode(ArrayList<Color> modifiedColorList, int stripeWidth, int imgHeight) {
 
 		int numStripes = modifiedColorList.size();
 
@@ -116,6 +131,7 @@ public class BarcodeGenerator {
 			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), imgHeight);
 		}
 		
+		/*
 		//save image
 		try {
 			File outputFile = new File(savePath);
@@ -124,7 +140,7 @@ public class BarcodeGenerator {
 			//System.out.print("\nSaving failed");
 			e.printStackTrace(System.out);
 
-		}
+		}*/
 		
 		return output;
 	}
@@ -133,7 +149,7 @@ public class BarcodeGenerator {
 	/**
 	 * This method sorts the avgColorList by hue, saturation, or brightness, in decreasing order.
 	 * @param sortVar The type of sort to be executed. Currently supports "hue", "saturation", and "brightness"
-	 * @return boolean True if input was a valid sort parameter, or false otherwise
+	 * @return ArrayList<Color> the sorted arraylist
 	 */
 	public static ArrayList<Color> sortAvgColorList(ArrayList<Color> avgColorList, String sortVar) {
 		

@@ -26,8 +26,7 @@ import org.json.JSONTokener;
 
 
 /**
- * This class imports images, generates a barcode from them, and
- * saves the barcode. It inherits from SwingWorker in order to run
+ * This class imports images from a given directory. It inherits from SwingWorker in order to run
  * in the background.
  * <p>
  * SwingWorker elements based on: http://www.javacreed.com/swing-worker-example/
