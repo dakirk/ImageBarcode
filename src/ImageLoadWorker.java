@@ -23,6 +23,7 @@ import javax.swing.SwingWorker;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -252,15 +253,26 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 			
 			//find file name for this image
 			JSONObject imgData = jsonArr.getJSONObject(i);
-			//String imgName = imgData.getString("path").split("/")[2]; //get 3rd item
+
+			//determine hover text
 			String imgName = imgData.getString("path");
+			String imgCaption = imgData.getString("caption");
+			if (!imgCaption.equals("")) imgCaption = "<br>Caption: " + imgCaption;
+			String imgDate = imgData.getString("taken_at");
+			String imgLocation = "";
+			try {
+				imgLocation = "<br>Taken at: " + imgData.getString("location");
+			} catch (JSONException jex) {
+				System.out.println("No location for this one");
+			}
 			String imgPath = folderPath + "/" + imgName;
+			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "</html>";
 
     		//if valid image, read and add to ArrayList
 			try {
 				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
        			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(imgPath))));
-       			filenames.add(imgName);
+       			filenames.add(hoverText);
        			//System.out.print("[DONE]");
    			} catch (IOException e) {
    				//System.out.print("[FAILED]");

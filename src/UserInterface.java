@@ -50,7 +50,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	JProgressBar progBar;
 	
 	ArrayList<Map.Entry<Color, String>> colorList;
-	ArrayList<BufferedImage> barList;
+	ArrayList<Map.Entry<BufferedImage, String>> barList;
 	BufferedImage barcode;
 	 
 	UserInterface() {
@@ -345,8 +345,8 @@ public class UserInterface extends JFrame implements ActionListener {
 		        barcode = new BufferedImage(barList.size()*barWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
 		        Graphics g = barcode.getGraphics();
 		        int x = 0;
-		        for(BufferedImage stripe: barList){
-		            g.drawImage(stripe, x, 0, null);
+		        for(Map.Entry<BufferedImage, String> stripe: barList){
+		            g.drawImage(stripe.getKey(), x, 0, null);
 		            x += barWidth;
 		        }
 		        g.dispose();
@@ -419,8 +419,11 @@ public class UserInterface extends JFrame implements ActionListener {
 			imgPanel.removeAll(); //clear previous image
 			
 			for (int i = 0; i < barList.size(); i++) {
-				JLabel picLabel = new JLabel(new ImageIcon(barList.get(i)));
-				picLabel.setToolTipText(Integer.toString(i));
+				JLabel picLabel = new JLabel(new ImageIcon(barList.get(i).getKey()));
+				picLabel.setToolTipText(barList.get(i).getValue());
+				ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+				ToolTipManager.sharedInstance().setInitialDelay(0);
+				ToolTipManager.sharedInstance().setReshowDelay(0);
 				//imgPanel.removeAll();
 				imgPanel.updateUI();
 				imgPanel.add(picLabel);

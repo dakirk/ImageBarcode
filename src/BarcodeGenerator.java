@@ -31,7 +31,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight the height of the barcode (in pixels)
 	 * @return the finished barcode as a png file
 	 */
-	public static ArrayList<BufferedImage> generate(ArrayList<Map.Entry<Color, String>> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
+	public static ArrayList<Map.Entry<BufferedImage, String>> generate(ArrayList<Map.Entry<Color, String>> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
 				
 		//sort the arraylist if necessary
 		if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
@@ -56,7 +56,7 @@ public class BarcodeGenerator {
     	}
     	
     	//generate the image
-    	ArrayList<BufferedImage> output = createBarcode(avgColorList, barWidth, imgHeight);
+    	ArrayList<Map.Entry<BufferedImage, String>> output = createBarcode(avgColorList, barWidth, imgHeight);
     	//System.out.println("[DONE]");
     	
     	return output;
@@ -120,11 +120,11 @@ public class BarcodeGenerator {
 	 * @param imgHeight The height of the barcode, in pixels
 	 * @return BufferedImage The completed barcode, in a renderable form
 	 */
-	public static ArrayList<BufferedImage> createBarcode(ArrayList<Map.Entry<Color, String>> modifiedColorList, int stripeWidth, int imgHeight) {
+	public static ArrayList<Map.Entry<BufferedImage, String>> createBarcode(ArrayList<Map.Entry<Color, String>> modifiedColorList, int stripeWidth, int imgHeight) {
 
 		int numStripes = modifiedColorList.size();
 
-		ArrayList<BufferedImage> imgList = new ArrayList<BufferedImage>();
+		ArrayList<Map.Entry<BufferedImage, String>> imgList = new ArrayList<Map.Entry<BufferedImage, String>>();
 		
 		for (int i = 0; i < modifiedColorList.size(); i++) {
 			BufferedImage stripe = new BufferedImage(stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
@@ -134,7 +134,7 @@ public class BarcodeGenerator {
 			g2d.setColor(currColor);
 			g2d.fillRect(0, 0, stripeWidth, imgHeight);
 			
-			imgList.add(stripe);
+			imgList.add(new AbstractMap.SimpleEntry<BufferedImage, String>(stripe, modifiedColorList.get(i).getValue()));
 			
 			g2d.dispose();
 		}
