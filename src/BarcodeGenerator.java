@@ -7,6 +7,7 @@
  */
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -121,6 +122,31 @@ public class BarcodeGenerator {
 
 		int numStripes = modifiedColorList.size();
 
+		ArrayList<BufferedImage> imgList = new ArrayList<BufferedImage>();
+		
+		for (int i = 0; i < modifiedColorList.size(); i++) {
+			BufferedImage stripe = new BufferedImage(stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g2d = stripe.createGraphics();
+			
+			g2d.setColor(modifiedColorList.get(i));
+			g2d.fillRect(0, 0, stripeWidth, imgHeight);
+			
+			imgList.add(stripe);
+			
+			g2d.dispose();
+		}
+		
+		//taken from http://jens-na.github.io/2013/11/06/java-how-to-concat-buffered-images/
+        BufferedImage output = new BufferedImage(numStripes*stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics g = output.getGraphics();
+        int x = 0;
+        for(BufferedImage stripe: imgList){
+            g.drawImage(stripe, x, 0, null);
+            x += stripeWidth;
+        }
+        g.dispose();
+		
+		/*
 		//initialize new image
 		BufferedImage output = new BufferedImage(numStripes*stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = output.createGraphics();
@@ -130,6 +156,7 @@ public class BarcodeGenerator {
 			g2d.setColor(modifiedColorList.get(i));
 			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), imgHeight);
 		}
+		*/
 		
 		/*
 		//save image
