@@ -1,7 +1,9 @@
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -35,7 +37,7 @@ import org.json.JSONTokener;
  * @version 1.2
  * @since 1.0
  */
-public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> { 
+public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, String>>, String> { 
 	
 	private static void failIfInterrupted() throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -43,39 +45,30 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
 		}
 	}
 	
-	private final String sortOption, enhanceOption, imgPath, jsonPath, savePath; //drop-down menu choices
-	private final int barWidth, imgHeight;
+	private final String imgPath, jsonPath; //drop-down menu choices
 	private final boolean hasJSON;
 	private final JProgressBar progBar;
 	private final JLabel progLabel;
 	
+	private ArrayList<String> filenames;
 	private ArrayList<BufferedImage> imgList;
     private ArrayList<Color> avgColorList;
     private BufferedImage output;
-	//private final Integer barWidth, imgHeight; //TODO: add these options
 	
-	public ImageLoadWorker(final String sortOption,
-						 final String enhanceOption,
-						 final int barWidth,
-						 final int imgHeight,
-						 final String imgPath,
-						 final boolean hasJSON,
-						 final String jsonPath,
-						 final String savePath,
-						 final JProgressBar progBar,
-						 final JLabel progLabel) {
-		this.sortOption = sortOption;
-		this.enhanceOption = enhanceOption;
-		this.barWidth = barWidth;
-		this.imgHeight = imgHeight;
-		this.hasJSON = hasJSON;
+	public ImageLoadWorker(final String imgPath,
+						   final String jsonPath,
+						   final boolean hasJSON,
+						   final JProgressBar progBar,
+						   final JLabel progLabel) {
 		this.imgPath = imgPath;
 		this.jsonPath = jsonPath;
-		this.savePath = savePath;
+		this.hasJSON = hasJSON;
+
 		this.progBar = progBar;
 		this.progLabel = progLabel;
 		
 		imgList = new ArrayList<BufferedImage>();
+		filenames = new ArrayList<String>();
     	avgColorList = new ArrayList<Color>();
 		
 	}
@@ -104,7 +97,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
 	 * @return BufferedImage The completed barcode
 	 */
 	@Override
-	protected ArrayList<Color> doInBackground() throws Exception {
+	protected ArrayList<Map.Entry<Color, String>> doInBackground() throws Exception {
 		
 		//BarcodeMaker barcodeGen = new BarcodeMaker();
 
@@ -121,6 +114,16 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
 		//get average colors for each image
 		publish("Averaging images...");
     	averageAll();
+
+    	//package colors and info together using Map.Entry as pairs
+    	ArrayList<Map.Entry<Color, String>> annotatedColorList = new ArrayList<Map.Entry<Color, String>>();
+    	for (int i = 0; i < avgColorList.size(); i++) {
+    		Color currColor = avgColorList.get(i);
+    		String currAnnotation = filenames.get(i);
+    		
+    		annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(currColor, currAnnotation));
+    	}
+    	
     	
     	failIfInterrupted();
     	
@@ -163,7 +166,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
     	
     	failIfInterrupted();
     	*/
-    	return avgColorList; //successful completion
+    	return annotatedColorList; //successful completion
 	}
 	
 	/**
@@ -189,10 +192,14 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
     		//if valid image, read and add to ArrayList
     		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
     			try {
+
     				//System.out.print("\nLoading " + file.getName() + "... ");
     				InputStream tempStream = Files.newInputStream(Paths.get(file.getPath()));    				
     				BufferedImage tempImg = ImageIO.read(tempStream);
     				imgList.add(tempImg);
+    				filenames.add(file.getName());
+
+    				//System.out.println(file.getName());
            			//System.out.print("[DONE]");
        			} catch (IOException e) {
        				//System.out.print("[FAILED]");
@@ -253,6 +260,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Color>, String> {
 			try {
 				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
        			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(imgPath))));
+       			filenames.add(imgName);
        			//System.out.print("[DONE]");
    			} catch (IOException e) {
    				//System.out.print("[FAILED]");

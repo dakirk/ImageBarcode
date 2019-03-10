@@ -12,7 +12,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.awt.*;
 
@@ -47,7 +49,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	JPanel imgPanel;
 	JProgressBar progBar;
 	
-	ArrayList<Color> colorList;
+	ArrayList<Map.Entry<Color, String>> colorList;
 	ArrayList<BufferedImage> barList;
 	BufferedImage barcode;
 	 
@@ -403,9 +405,12 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 			
 			//make a deep copy to preserve the original arraylist
-			ArrayList<Color> tempColorList = new ArrayList<Color>();
-			for(Color c : colorList) {
-			    tempColorList.add(new Color(c.getRed(), c.getGreen(), c.getBlue()));
+			ArrayList<Map.Entry<Color, String>> tempColorList = new ArrayList<Map.Entry<Color, String>>();
+			for(Map.Entry<Color, String> pair : colorList) {
+				Color c = (Color)pair.getKey(); //not sure why casting necessary
+				
+				//copy this element (awful syntax)
+			    tempColorList.add(new AbstractMap.SimpleEntry<Color, String>(new Color(c.getRed(), c.getGreen(), c.getBlue()), (String)pair.getValue()));
 			}
 			
 			//render barcode
@@ -432,7 +437,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	 */
 	public void loadImages() {
 		
-		ImageLoadWorker bworker = new ImageLoadWorker(sortOption, enhanceOption, barWidth, imgHeight, imgPath, hasJSON, jsonPath, savePath, progBar, progLabel);
+		ImageLoadWorker bworker = new ImageLoadWorker(imgPath, jsonPath, hasJSON, progBar, progLabel);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -449,7 +454,7 @@ public class UserInterface extends JFrame implements ActionListener {
 						
 						
 						try {
-							ArrayList<Color> tempColorList = bworker.get();
+							ArrayList<Map.Entry<Color, String>> tempColorList = bworker.get();
 							
 							if (tempColorList.size() > 0) { //if loading was successful
 								colorList = tempColorList;

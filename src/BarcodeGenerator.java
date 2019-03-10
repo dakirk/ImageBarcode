@@ -10,8 +10,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Map;
 
 public class BarcodeGenerator {
 
@@ -29,7 +31,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight the height of the barcode (in pixels)
 	 * @return the finished barcode as a png file
 	 */
-	public static ArrayList<BufferedImage> generate(ArrayList<Color> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
+	public static ArrayList<BufferedImage> generate(ArrayList<Map.Entry<Color, String>> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
 				
 		//sort the arraylist if necessary
 		if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
@@ -69,7 +71,7 @@ public class BarcodeGenerator {
 	 * @param brightness The new brightness for all color--if null, hues are not adjusted
 	 * @return ArrayList<Color> the adjusted arraylist
 	 */
-	public static ArrayList<Color> adjustHSB(ArrayList<Color> sortedColorList, Double hue, Double saturation, Double brightness) {
+	public static ArrayList<Map.Entry<Color, String>> adjustHSB(ArrayList<Map.Entry<Color, String>> sortedColorList, Double hue, Double saturation, Double brightness) {
 		
 		double finalHue;
 		double finalSaturation;
@@ -77,7 +79,7 @@ public class BarcodeGenerator {
 
 		for (int i = 0; i < sortedColorList.size(); i++) {
 			
-			Color currColor = sortedColorList.get(i);
+			Color currColor = sortedColorList.get(i).getKey();
 			
 			float[] avgHSB = Color.RGBtoHSB(currColor.getRed(), currColor.getGreen(), currColor.getBlue(), null);
 			
@@ -102,7 +104,7 @@ public class BarcodeGenerator {
 				finalBrightness = brightness;
 			}
 			
-			sortedColorList.set(i, Color.getHSBColor((float)finalHue, (float)finalSaturation, (float)finalBrightness));
+			sortedColorList.set(i, new AbstractMap.SimpleEntry<Color, String>(Color.getHSBColor((float)finalHue, (float)finalSaturation, (float)finalBrightness), sortedColorList.get(i).getValue()));
 
 		}
 		
@@ -118,7 +120,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight The height of the barcode, in pixels
 	 * @return BufferedImage The completed barcode, in a renderable form
 	 */
-	public static ArrayList<BufferedImage> createBarcode(ArrayList<Color> modifiedColorList, int stripeWidth, int imgHeight) {
+	public static ArrayList<BufferedImage> createBarcode(ArrayList<Map.Entry<Color, String>> modifiedColorList, int stripeWidth, int imgHeight) {
 
 		int numStripes = modifiedColorList.size();
 
@@ -128,7 +130,8 @@ public class BarcodeGenerator {
 			BufferedImage stripe = new BufferedImage(stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
 			Graphics2D g2d = stripe.createGraphics();
 			
-			g2d.setColor(modifiedColorList.get(i));
+			Color currColor = modifiedColorList.get(i).getKey();
+			g2d.setColor(currColor);
 			g2d.fillRect(0, 0, stripeWidth, imgHeight);
 			
 			imgList.add(stripe);
@@ -182,7 +185,7 @@ public class BarcodeGenerator {
 	 * @param sortVar The type of sort to be executed. Currently supports "hue", "saturation", and "brightness"
 	 * @return ArrayList<Color> the sorted arraylist
 	 */
-	public static ArrayList<Color> sortAvgColorList(ArrayList<Color> avgColorList, String sortVar) {
+	public static ArrayList<Map.Entry<Color, String>> sortAvgColorList(ArrayList<Map.Entry<Color, String>> avgColorList, String sortVar) {
 		
 		int sortIndex;
 		
@@ -196,11 +199,13 @@ public class BarcodeGenerator {
 			return avgColorList; //if invalid option, return unmodified list
 		}
 		
-		avgColorList.sort(new Comparator<Color>() {
+		avgColorList.sort(new Comparator<Map.Entry<Color, String>>() {
 		    @Override
-		    public int compare(Color o1, Color o2) {
-		    	float[] o1HSB = Color.RGBtoHSB(o1.getRed(), o1.getGreen(), o1.getBlue(), null);
-		    	float[] o2HSB = Color.RGBtoHSB(o2.getRed(), o2.getGreen(), o2.getBlue(), null);
+		    public int compare(Map.Entry<Color, String> o1, Map.Entry<Color, String> o2) {
+		    	Color c1 = o1.getKey();
+		    	Color c2 = o2.getKey();
+		    	float[] o1HSB = Color.RGBtoHSB(c1.getRed(), c1.getGreen(), c1.getBlue(), null);
+		    	float[] o2HSB = Color.RGBtoHSB(c2.getRed(), c2.getGreen(), c2.getBlue(), null);
 
 		    	if (o1HSB[sortIndex] > o2HSB[sortIndex]) return -1;
 		    	else if (o1HSB[sortIndex] == o2HSB[sortIndex]) return 0;
