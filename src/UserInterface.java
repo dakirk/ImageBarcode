@@ -48,6 +48,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	JProgressBar progBar;
 	
 	ArrayList<Color> colorList;
+	ArrayList<BufferedImage> barList;
 	BufferedImage barcode;
 	 
 	UserInterface() {
@@ -337,6 +338,17 @@ public class UserInterface extends JFrame implements ActionListener {
 			int returnVal = savePathChooser.showSaveDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				
+				//taken from http://jens-na.github.io/2013/11/06/java-how-to-concat-buffered-images/
+		        barcode = new BufferedImage(barList.size()*barWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
+		        Graphics g = barcode.getGraphics();
+		        int x = 0;
+		        for(BufferedImage stripe: barList){
+		            g.drawImage(stripe, x, 0, null);
+		            x += barWidth;
+		        }
+		        g.dispose();
+				
 				savePath = savePathChooser.getSelectedFile().getPath();
 				System.out.println(savePath);
 				//save image
@@ -397,11 +409,18 @@ public class UserInterface extends JFrame implements ActionListener {
 			}
 			
 			//render barcode
-			barcode = BarcodeGenerator.generate(tempColorList, sortOption, enhanceOption, barWidth, imgHeight);
-			JLabel picLabel = new JLabel(new ImageIcon(barcode));
-			imgPanel.removeAll();
-			imgPanel.updateUI();
-			imgPanel.add(picLabel);
+			barList = BarcodeGenerator.generate(tempColorList, sortOption, enhanceOption, barWidth, imgHeight);
+			
+			imgPanel.removeAll(); //clear previous image
+			
+			for (int i = 0; i < barList.size(); i++) {
+				JLabel picLabel = new JLabel(new ImageIcon(barList.get(i)));
+				picLabel.setToolTipText(Integer.toString(i));
+				//imgPanel.removeAll();
+				imgPanel.updateUI();
+				imgPanel.add(picLabel);
+				//System.out.println("added a new image");
+			}
 			
 			savePathChooseButton.setEnabled(true);
 		

@@ -29,7 +29,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight the height of the barcode (in pixels)
 	 * @return the finished barcode as a png file
 	 */
-	public static BufferedImage generate(ArrayList<Color> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
+	public static ArrayList<BufferedImage> generate(ArrayList<Color> avgColorList, String sortOption, String enhanceOption, int barWidth, int imgHeight) {
 				
 		//sort the arraylist if necessary
 		if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
@@ -54,7 +54,7 @@ public class BarcodeGenerator {
     	}
     	
     	//generate the image
-    	BufferedImage output = createBarcode(avgColorList, barWidth, imgHeight);
+    	ArrayList<BufferedImage> output = createBarcode(avgColorList, barWidth, imgHeight);
     	//System.out.println("[DONE]");
     	
     	return output;
@@ -118,7 +118,7 @@ public class BarcodeGenerator {
 	 * @param imgHeight The height of the barcode, in pixels
 	 * @return BufferedImage The completed barcode, in a renderable form
 	 */
-	public static BufferedImage createBarcode(ArrayList<Color> modifiedColorList, int stripeWidth, int imgHeight) {
+	public static ArrayList<BufferedImage> createBarcode(ArrayList<Color> modifiedColorList, int stripeWidth, int imgHeight) {
 
 		int numStripes = modifiedColorList.size();
 
@@ -136,6 +136,9 @@ public class BarcodeGenerator {
 			g2d.dispose();
 		}
 		
+		return imgList;
+		
+		/*
 		//taken from http://jens-na.github.io/2013/11/06/java-how-to-concat-buffered-images/
         BufferedImage output = new BufferedImage(numStripes*stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
         Graphics g = output.getGraphics();
@@ -145,6 +148,7 @@ public class BarcodeGenerator {
             x += stripeWidth;
         }
         g.dispose();
+		*/
 		
 		/*
 		//initialize new image
@@ -169,7 +173,7 @@ public class BarcodeGenerator {
 
 		}*/
 		
-		return output;
+		//return output;
 	}
 
 	//sorts color list by hue, saturation, or brightness
