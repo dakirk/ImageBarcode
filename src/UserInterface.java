@@ -2,7 +2,7 @@
  * This class renders the user interface of this program using Java's built-in Swing elements.
  * 
  * @author David Kirk
- * @version 1.3
+ * @version 1.3.1
  * @since 1.0
  */
 

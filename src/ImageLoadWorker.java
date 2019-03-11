@@ -4,25 +4,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.awt.Color;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import javax.imageio.ImageIO;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
+//library imports
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import com.twelvemonkeys.image.BufferedImageFactory;
 
 
 /**
@@ -32,7 +31,7 @@ import org.json.JSONTokener;
  * SwingWorker elements based on: http://www.javacreed.com/swing-worker-example/
  * 
  * @author David Kirk
- * @version 1.3
+ * @version 1.3.1
  * @since 1.0
  */
 public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, String>>, String> { 
@@ -133,27 +132,22 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 
     		//if valid image, read and add to ArrayList
     		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
-    			try {
 
-    				//System.out.print("\nLoading " + file.getName() + "... ");
-    				InputStream tempStream = Files.newInputStream(Paths.get(file.getPath()));    				
-    				BufferedImage tempImg = ImageIO.read(tempStream);
-    				
-    				String hoverText = "<html>" + file.getName() + "<br><img src=\"file:" + file.getAbsolutePath() + "\" width=" + tempImg.getWidth()/8 + " height=" + tempImg.getHeight()/8 + "></html>";    				
-    				
-    				Color avgColor = averageColor(tempImg);
-    				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
-    				
-    				tempImg.flush();
-    				tempImg = null;
-    				tempStream.close();
+				String path = file.getAbsolutePath();
+				
+				//using the TwelveMonkeys image manipulation library to load image
+				//https://stackoverflow.com/questions/29705050/reading-a-progressively-encoded-9000x9000-jpeg-in-java-takes-1-minute?answertab=oldest#tab-top
+				BufferedImage image = new BufferedImageFactory(Toolkit.getDefaultToolkit().createImage(path)).getBufferedImage();
 
-    				//System.out.println(file.getName());
-           			//System.out.print("[DONE]");
-       			} catch (IOException e) {
-       				//System.out.print("[FAILED]");
-       				e.printStackTrace(System.out);
-       			}
+				String hoverText = "<html>" + file.getName() + "<br><img src=\"file:" + file.getAbsolutePath() + "\" width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";    				
+				
+				//get average color of this image
+				Color avgColor = averageColor(image);
+				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
+				
+				image.flush();
+				image = null;
+ 
     		} else {
     			//System.out.print("\nNot an image: " + file.getName());
     		}
@@ -219,24 +213,18 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 			}
 			String imgPath = folderPath + "/" + imgName;
 			
-    		//if valid image, read and add to ArrayList
-			try {
-				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
-     
-				BufferedImage image = ImageIO.read(Files.newInputStream(Paths.get(imgPath)));
-    			
-				String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
-       			
-       			Color avgColor = averageColor(image);
-				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
-       			
-       			image.flush();
-       			image = null;
-       			//System.out.print("[DONE]");
-   			} catch (IOException e) {
-   				//System.out.print("[FAILED]");
-   				e.printStackTrace(System.out);
-   			}
+			//using the TwelveMonkeys image manipulation library to load image
+			//https://stackoverflow.com/questions/29705050/reading-a-progressively-encoded-9000x9000-jpeg-in-java-takes-1-minute?answertab=oldest#tab-top
+			BufferedImage image = new BufferedImageFactory(Toolkit.getDefaultToolkit().createImage(imgPath)).getBufferedImage();
+
+			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
+   			
+   			Color avgColor = averageColor(image);
+			annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
+   			
+   			image.flush();
+   			image = null;
+
 
 		}
 
