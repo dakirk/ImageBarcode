@@ -2,7 +2,7 @@
  * This class generates a barcode from an ArrayList of colors.
  * 
  * @author David Kirk
- * @version 1.2
+ * @version 1.3
  * @since 1.2
  */
 

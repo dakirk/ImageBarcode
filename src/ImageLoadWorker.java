@@ -32,7 +32,7 @@ import org.json.JSONTokener;
  * SwingWorker elements based on: http://www.javacreed.com/swing-worker-example/
  * 
  * @author David Kirk
- * @version 1.2
+ * @version 1.3
  * @since 1.0
  */
 public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, String>>, String> { 
