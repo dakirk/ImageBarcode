@@ -52,6 +52,9 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	private ArrayList<String> filenames;
 	private ArrayList<BufferedImage> imgList;
     private ArrayList<Color> avgColorList;
+    private int loadProgress;
+    private int avgProgress;
+    
 	
 	public ImageLoadWorker(final String imgPath,
 						   final String jsonPath,
@@ -68,6 +71,8 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 		imgList = new ArrayList<BufferedImage>();
 		filenames = new ArrayList<String>();
     	avgColorList = new ArrayList<Color>();
+    	loadProgress = 0;
+    	avgProgress = 0;
 		
 	}
 	
@@ -78,7 +83,9 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	 */
 	@Override
 	protected void process(List<String> chunks) {
-		progLabel.setText(chunks.get(chunks.size()-1));
+		progBar.setEnabled(true);
+		progBar.setString(chunks.get(chunks.size()-1));
+		progBar.setValue(loadProgress + avgProgress);
 		return;
 	}
 	/**
@@ -86,7 +93,9 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	 */
 	@Override
 	protected void done() {
-		progLabel.setText("Done!");
+		progBar.setString("Done!");
+		progBar.setValue(0);
+		progBar.setEnabled(false);
 	}
 	
 	/**
@@ -146,6 +155,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     		int lastFourIndex = file.getName().length()-4;
     		String lastFourChars = file.getName().substring(lastFourIndex);
     		publish("Reading files (" + i + "/" + fileList.length + ")");
+    		loadProgress = (int)(50 * ((double)i / (double)fileList.length));
 
     		//if valid image, read and add to ArrayList
     		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
@@ -211,6 +221,8 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 		for (int i = 0; i < jsonArr.length(); i++) {
 			
     		publish("Reading files (" + i + "/" + jsonArr.length() + ")");
+    		loadProgress = (int)(50 * ((double)i / (double)jsonArr.length()));
+
 			
 			//find file name for this image
 			JSONObject imgData = jsonArr.getJSONObject(i);
@@ -285,6 +297,8 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     	for (BufferedImage img : imgList) {
     		
     		publish("Averaging files (" + i + "/" + imgList.size() + ")");
+    		avgProgress = (int)(50 * ((double)i / (double)imgList.size()));
+
     		
     		//System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
     		avgColorList.add(averageColor(img));

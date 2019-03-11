@@ -198,10 +198,15 @@ public class UserInterface extends JFrame implements ActionListener {
 		loadButton = new JButton("Load Images");
 		loadButton.addActionListener(this);
 		progLabel = new JLabel("Ready", SwingConstants.CENTER);
+		progBar = new JProgressBar(0, 100);
+		progBar.setStringPainted(true);
+		progBar.setEnabled(false);
+		progBar.setValue(0);
+		progBar.setString("Ready");
 		JPanel panel6 = new JPanel();
 		panel6.setLayout(new GridLayout(2, 1, 0, 0));
 		panel6.add(loadButton);
-		panel6.add(progLabel);
+		panel6.add(progBar);
 		panel6.setBorder(lineBorder);
 		panel6.setPreferredSize(new Dimension(panelWidth, panelHeight));
 		
@@ -477,14 +482,17 @@ public class UserInterface extends JFrame implements ActionListener {
 								
 							} else {
 								JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
-								
+								progBar.setString("Nothing loaded");
 							}
 							
 						} catch (ExecutionException e) {
 							JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
+							progBar.setString("Nothing loaded");
 							e.printStackTrace(System.out);
 						} catch (InterruptedException e) {
 							JOptionPane.showMessageDialog(null, "Image generation was interrupted.");
+							progBar.setString("Nothing loaded");
+							e.printStackTrace(System.out);
 						}
 					}
 				}
