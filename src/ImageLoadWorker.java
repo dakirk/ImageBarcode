@@ -1,11 +1,9 @@
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,7 +52,6 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	private ArrayList<String> filenames;
 	private ArrayList<BufferedImage> imgList;
     private ArrayList<Color> avgColorList;
-    private BufferedImage output;
 	
 	public ImageLoadWorker(final String imgPath,
 						   final String jsonPath,
@@ -127,46 +124,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     	
     	
     	failIfInterrupted();
-    	
-    	//sort if necessary
-    	/*
-    	if (!sortOption.equals("None") && !sortOption.equals("Chronological")) {
-        	publish("Sorting images...");
-    		//System.out.print("\nSorting... ");
-    		sortAvgColorList(sortOption.toLowerCase());
-        	//System.out.print("[DONE]");
-    	}
-    	
-    	failIfInterrupted();
-    	
-    	//enhance one color attribute if requested
-    	if (!enhanceOption.equals("None")) {
-        	publish("Adjusting HSB values...");
-    		//System.out.print("\nAdjusting HSB values... ");
-    		switch(enhanceOption) {
-    			case "Hue": 		adjustHSB(1.0, null, null);
-    								break;
-    			case "Saturation":	adjustHSB(null, 1.0, null);
-    								break;
-    			case "Brightness":	adjustHSB(null,  null,  1.0);
-    								break;
-    			default: 			break;
-    		}
-        	//System.out.print("[DONE]");
-    	}
-    	
-    	failIfInterrupted();
 
-    	//System.out.println("made it here");
-
-    	publish("Generating and saving barcode...");
-    	//System.out.print("\nGenerating and saving barcode... ");
-    	//System.out.println(imgHeight);
-    	BufferedImage output = createBarcode(savePath, barWidth, imgHeight);
-    	//System.out.println("[DONE]");
-    	
-    	failIfInterrupted();
-    	*/
     	return annotatedColorList; //successful completion
 	}
 	
@@ -176,7 +134,6 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	 * @param folderPath This is the path for the folder containing images to be loaded
 	 */
 	public void loadImagesFromFolder(String folderPath) {
-    	File folder = new File(folderPath);
     	//File[] fileList = folder.listFiles();
     	
     	//get all files in folder and subfolders recursively
@@ -198,7 +155,9 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     				InputStream tempStream = Files.newInputStream(Paths.get(file.getPath()));    				
     				BufferedImage tempImg = ImageIO.read(tempStream);
     				imgList.add(tempImg);
-    				filenames.add(file.getName());
+    				
+    				String hoverText = "<html>" + file.getName() + "<br><img src=\"file:" + file.getAbsolutePath() + "\" width=" + tempImg.getWidth()/8 + " height=" + tempImg.getHeight()/8 + "></html>";
+    				filenames.add(hoverText);
 
     				//System.out.println(file.getName());
            			//System.out.print("[DONE]");
@@ -223,6 +182,8 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	 */
     public void loadImagesChronologically(String folderPath, String jsonPath) {
 
+    	ImageIO.setUseCache(false);
+    	
     	//read JSON file to get load order
     	BufferedReader br = null;
 		try {
@@ -261,17 +222,19 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 			String imgDate = imgData.getString("taken_at");
 			String imgLocation = "";
 			try {
-				imgLocation = "<br>Taken at: " + imgData.getString("location");
+				imgLocation = "<br>Location: " + imgData.getString("location");
 			} catch (JSONException jex) {
-				System.out.println("No location for this one");
+				//System.out.println("No location for this one");
 			}
 			String imgPath = folderPath + "/" + imgName;
-			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "</html>";
-
+			
     		//if valid image, read and add to ArrayList
 			try {
 				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
-       			imgList.add(ImageIO.read(Files.newInputStream(Paths.get(imgPath))));
+     
+				BufferedImage image = ImageIO.read(Files.newInputStream(Paths.get(imgPath)));
+				imgList.add(image);
+    			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
        			filenames.add(hoverText);
        			//System.out.print("[DONE]");
    			} catch (IOException e) {
@@ -328,131 +291,5 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     		//System.out.print("[DONE]");
     		i++;
     	}
-	}
-	
-	//if any argument is null, leave as-is
-	/**
-	 * This method modifies the colors in avgColorList according to the HSB color model.
-	 * All parameters are values between 0 and 1, and for now there is no input sanitization.
-	 * @param hue The new hue for all colors--if null, hues are not adjusted
-	 * @param saturation The new saturation for all colors--if null saturations are not adjusted
-	 * @param brightness The new brightness for all color--if null, hues are not adjusted
-	 */
-	public void adjustHSB(Double hue, Double saturation, Double brightness) {
-		
-		double finalHue;
-		double finalSaturation;
-		double finalBrightness;
-
-		for (int i = 0; i < avgColorList.size(); i++) {
-			
-			Color currColor = avgColorList.get(i);
-			
-			float[] avgHSB = Color.RGBtoHSB(currColor.getRed(), currColor.getGreen(), currColor.getBlue(), null);
-			
-			//fix hue if necessary
-			if (hue == null) {
-				finalHue = avgHSB[0];
-			} else {
-				finalHue = hue;
-			}
-			
-			//fix saturation if necessary
-			if (saturation == null) {
-				finalSaturation = avgHSB[1];
-			} else {
-				finalSaturation = saturation;
-			}
-			
-			//fix brightness if necessary
-			if (brightness == null) {
-				finalBrightness = avgHSB[2];
-			} else {
-				finalBrightness = brightness;
-			}
-			
-			avgColorList.set(i, Color.getHSBColor((float)finalHue, (float)finalSaturation, (float)finalBrightness));
-
-		}
-		
-		
-	}
-
-	/**
-	 * This method generates and saves the barcode in PNG format using the colors currently saved in avgColorList.
-	 * @param savePath The location for the saved barcode image
-	 * @param stripeWidth The width of each bar in the barcode, in pixels
-	 * @param imgHeight The height of the barcode, in pixels
-	 * @return BufferedImage The completed barcode, in a renderable form
-	 */
-	public BufferedImage createBarcode(String savePath, int stripeWidth, int imgHeight) {
-
-		int numStripes = avgColorList.size();
-
-		//initialize new image
-		output = new BufferedImage(numStripes*stripeWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = output.createGraphics();
-
-		//draw each stripe
-		for (int i = 0; i < numStripes; i++) {
-			g2d.setColor(avgColorList.get(i));
-			g2d.fillRect(i*stripeWidth, 0, ((i+1)*stripeWidth), imgHeight);
-		}
-		
-		//save image
-		try {
-			File outputFile = new File(savePath);
-			ImageIO.write(output, "png", outputFile);
-		} catch (IOException e) {
-			//System.out.print("\nSaving failed");
-			publish("Saving failed");
-			e.printStackTrace(System.out);
-
-		}
-		
-		return output;
-	}
-
-	//sorts color list by hue, saturation, or brightness
-	/**
-	 * This method sorts the avgColorList by hue, saturation, or brightness, in decreasing order.
-	 * @param sortVar The type of sort to be executed. Currently supports "hue", "saturation", and "brightness"
-	 * @return boolean True if input was a valid sort parameter, or false otherwise
-	 */
-	public boolean sortAvgColorList(String sortVar) {
-		
-		int sortIndex;
-		
-		if (sortVar.equals("hue")) {
-			sortIndex = 0;
-		} else if (sortVar.equals("saturation")) {
-			sortIndex = 1;
-		} else if (sortVar.equals("brightness")) {
-			sortIndex = 2;
-		} else {
-			return false;
-		}
-		
-		avgColorList.sort(new Comparator<Color>() {
-		    @Override
-		    public int compare(Color o1, Color o2) {
-		    	float[] o1HSB = Color.RGBtoHSB(o1.getRed(), o1.getGreen(), o1.getBlue(), null);
-		    	float[] o2HSB = Color.RGBtoHSB(o2.getRed(), o2.getGreen(), o2.getBlue(), null);
-
-		    	if (o1HSB[sortIndex] > o2HSB[sortIndex]) return -1;
-		    	else if (o1HSB[sortIndex] == o2HSB[sortIndex]) return 0;
-		    	else return 1;
-
-		    	//System.out.println("first HSB: " + o1HSB[0]);
-		    	//System.out.println("second HSB: " + o2HSB[0]);
-		        //return (int)(10.0*(o1HSB[0] - o2HSB[0]));
-    		}
-		});
-		
-		return true;
-	}
-	
-	
-	
-
+	}	
 }

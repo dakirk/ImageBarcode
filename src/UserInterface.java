@@ -27,6 +27,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class UserInterface extends JFrame implements ActionListener {
 	
+	private static final long serialVersionUID = 1L; //here to silence warning, but I don't plan on using it
+	
 	final int panelWidth = 400; //preferred panel width
 	final int panelHeight = 60; //preferred panel height
 	final int numPanelRows = 7; //number of rows of panels
@@ -42,7 +44,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	
 	JLabel descriptionLabelSort, descriptionLabelEnhance, barWidthBoxLabel, imgHeightBoxLabel, imgPathText, jsonPathText, savePathText, progLabel;
 	JFrame f;
-	JComboBox sortOptionBox, enhanceOptionBox;
+	JComboBox<String> sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox;
 	JButton loadButton, genButton, imgPathChooseButton, jsonPathChooseButton, jsonPathClearButton, savePathChooseButton;
 	JFileChooser imgPathChooser, jsonPathChooser, savePathChooser;
@@ -77,11 +79,11 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel1.add(descriptionLabelEnhance);
 		
 		if (hasJSON) { 
-			sortOptionBox = new JComboBox(sortOptionsJSON);
+			sortOptionBox = new JComboBox<String>(sortOptionsJSON);
 			sortOptionBox.setSelectedItem("Chronological"); //set default
 			sortOption = "Chronological";
 		} else {
-			sortOptionBox = new JComboBox(sortOptionsNoJSON);
+			sortOptionBox = new JComboBox<String>(sortOptionsNoJSON);
 			sortOptionBox.setSelectedItem("Hue"); //set default
 			sortOption = "Hue";
 		}
@@ -93,7 +95,7 @@ public class UserInterface extends JFrame implements ActionListener {
 		panel1.add(sortOptionBox);
 		
 		//enhance drop-down
-		enhanceOptionBox = new JComboBox(enhanceOptions); //set default
+		enhanceOptionBox = new JComboBox<String>(enhanceOptions); //set default
 		//enhanceOptionBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		enhanceOptionBox.addActionListener(this);
 		enhanceOptionBox.setSelectedItem("None");
@@ -207,7 +209,6 @@ public class UserInterface extends JFrame implements ActionListener {
 		genButton = new JButton("Generate Barcode");
 		genButton.addActionListener(this);
 		genButton.setEnabled(false);
-		JLabel genLabel = new JLabel("Ready", SwingConstants.CENTER);
 		JPanel panel7 = new JPanel();
 		
 		savePath = System.getProperty("user.dir") + "barcode.png";
