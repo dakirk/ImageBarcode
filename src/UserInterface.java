@@ -42,7 +42,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	String imgPath, jsonPath, savePath;
 	boolean hasJSON;
 	
-	JLabel descriptionLabelSort, descriptionLabelEnhance, barWidthBoxLabel, imgHeightBoxLabel, imgPathText, jsonPathText, savePathText, progLabel;
+	JLabel descriptionLabelSort, descriptionLabelEnhance, barWidthBoxLabel, imgHeightBoxLabel, imgPathText, jsonPathText, savePathText;
 	JFrame f;
 	JComboBox<String> sortOptionBox, enhanceOptionBox;
 	JTextField barWidthBox, imgHeightBox;
@@ -197,7 +197,6 @@ public class UserInterface extends JFrame implements ActionListener {
 		//panel for load button
 		loadButton = new JButton("Load Images");
 		loadButton.addActionListener(this);
-		progLabel = new JLabel("Ready", SwingConstants.CENTER);
 		progBar = new JProgressBar(0, 100);
 		progBar.setStringPainted(true);
 		progBar.setEnabled(false);
@@ -446,7 +445,7 @@ public class UserInterface extends JFrame implements ActionListener {
 	 */
 	public void loadImages() {
 		
-		ImageLoadWorker bworker = new ImageLoadWorker(imgPath, jsonPath, hasJSON, progBar, progLabel);
+		ImageLoadWorker bworker = new ImageLoadWorker(imgPath, jsonPath, hasJSON, progBar);
 		
 		//determine when to reset button
 		bworker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -486,12 +485,12 @@ public class UserInterface extends JFrame implements ActionListener {
 							}
 							
 						} catch (ExecutionException e) {
-							JOptionPane.showMessageDialog(null, "No images found. If you're using a JSON file, please make sure that it is called \"media.json\" and that you are in the top level of the folder downloaded from Instagram.");
-							progBar.setString("Nothing loaded");
+							JOptionPane.showMessageDialog(null, "An error occurred during execution.");
+							progBar.setString("Error");
 							e.printStackTrace(System.out);
 						} catch (InterruptedException e) {
 							JOptionPane.showMessageDialog(null, "Image generation was interrupted.");
-							progBar.setString("Nothing loaded");
+							progBar.setString("Error");
 							e.printStackTrace(System.out);
 						}
 					}

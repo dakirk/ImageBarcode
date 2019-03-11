@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
-import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
@@ -47,32 +46,23 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	private final String imgPath, jsonPath; //drop-down menu choices
 	private final boolean hasJSON;
 	private final JProgressBar progBar;
-	private final JLabel progLabel;
 	
-	private ArrayList<String> filenames;
-	private ArrayList<BufferedImage> imgList;
-    private ArrayList<Color> avgColorList;
     private int loadProgress;
-    private int avgProgress;
+    private ArrayList<Map.Entry<Color, String>> annotatedColorList;
     
 	
 	public ImageLoadWorker(final String imgPath,
 						   final String jsonPath,
 						   final boolean hasJSON,
-						   final JProgressBar progBar,
-						   final JLabel progLabel) {
+						   final JProgressBar progBar) {
 		this.imgPath = imgPath;
 		this.jsonPath = jsonPath;
 		this.hasJSON = hasJSON;
 
 		this.progBar = progBar;
-		this.progLabel = progLabel;
-		
-		imgList = new ArrayList<BufferedImage>();
-		filenames = new ArrayList<String>();
-    	avgColorList = new ArrayList<Color>();
     	loadProgress = 0;
-    	avgProgress = 0;
+		annotatedColorList = new ArrayList<Map.Entry<Color, String>>();
+
 		
 	}
 	
@@ -85,7 +75,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	protected void process(List<String> chunks) {
 		progBar.setEnabled(true);
 		progBar.setString(chunks.get(chunks.size()-1));
-		progBar.setValue(loadProgress + avgProgress);
+		progBar.setValue(loadProgress);
 		return;
 	}
 	/**
@@ -118,22 +108,6 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 		
 		failIfInterrupted();
 
-		//get average colors for each image
-		publish("Averaging images...");
-    	averageAll();
-
-    	//package colors and info together using Map.Entry as pairs
-    	ArrayList<Map.Entry<Color, String>> annotatedColorList = new ArrayList<Map.Entry<Color, String>>();
-    	for (int i = 0; i < avgColorList.size(); i++) {
-    		Color currColor = avgColorList.get(i);
-    		String currAnnotation = filenames.get(i);
-    		
-    		annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(currColor, currAnnotation));
-    	}
-    	
-    	
-    	failIfInterrupted();
-
     	return annotatedColorList; //successful completion
 	}
 	
@@ -148,14 +122,14 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     	//get all files in folder and subfolders recursively
     	Collection<File> fileCollection = (FileUtils.listFiles(new File(folderPath), null, true));
     	File[] fileList = fileCollection.toArray(new File[fileCollection.size()]);
-    	ImageIO.setUseCache(false);
+    	ImageIO.setUseCache(true);
     	//load all images
     	int i = 0;
     	for (File file : fileList) {
     		int lastFourIndex = file.getName().length()-4;
     		String lastFourChars = file.getName().substring(lastFourIndex);
     		publish("Reading files (" + i + "/" + fileList.length + ")");
-    		loadProgress = (int)(50 * ((double)i / (double)fileList.length));
+    		loadProgress = (int)(100 * ((double)i / (double)fileList.length));
 
     		//if valid image, read and add to ArrayList
     		if (file.isFile() && (lastFourChars.equals(".jpg") || lastFourChars.equals(".png"))) {
@@ -164,10 +138,16 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     				//System.out.print("\nLoading " + file.getName() + "... ");
     				InputStream tempStream = Files.newInputStream(Paths.get(file.getPath()));    				
     				BufferedImage tempImg = ImageIO.read(tempStream);
-    				imgList.add(tempImg);
     				
-    				String hoverText = "<html>" + file.getName() + "<br><img src=\"file:" + file.getAbsolutePath() + "\" width=" + tempImg.getWidth()/8 + " height=" + tempImg.getHeight()/8 + "></html>";
-    				filenames.add(hoverText);
+    				String hoverText = "<html>" + file.getName() + "<br><img src=\"file:" + file.getAbsolutePath() + "\" width=" + tempImg.getWidth()/8 + " height=" + tempImg.getHeight()/8 + "></html>";    				
+    				
+    				Color avgColor = averageColor(tempImg);
+    				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
+    				System.out.println(annotatedColorList.size());
+    				
+    				tempImg.flush();
+    				tempImg = null;
+    				tempStream.close();
 
     				//System.out.println(file.getName());
            			//System.out.print("[DONE]");
@@ -221,7 +201,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 		for (int i = 0; i < jsonArr.length(); i++) {
 			
     		publish("Reading files (" + i + "/" + jsonArr.length() + ")");
-    		loadProgress = (int)(50 * ((double)i / (double)jsonArr.length()));
+    		loadProgress = (int)(100 * ((double)i / (double)jsonArr.length()));
 
 			
 			//find file name for this image
@@ -245,9 +225,14 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 				//System.out.print("\nLoading " + imgName + ", taken at " + imgData.getString("taken_at") + "... ");
      
 				BufferedImage image = ImageIO.read(Files.newInputStream(Paths.get(imgPath)));
-				imgList.add(image);
-    			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
-       			filenames.add(hoverText);
+    			
+				String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
+       			
+       			Color avgColor = averageColor(image);
+				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
+       			
+       			image.flush();
+       			image = null;
        			//System.out.print("[DONE]");
    			} catch (IOException e) {
    				//System.out.print("[FAILED]");
@@ -285,25 +270,4 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 	    return new Color(avgRed, avgGreen, avgBlue);
 	    
 	}
-
-	/**
-	 * This method runs the averageColor function on all images in imgList and adds them to an internal
-	 * variable avgColorList.
-	 */
-	public void averageAll() {
-
-    	//average each image and make a list of the averages
-		int i = 0;
-    	for (BufferedImage img : imgList) {
-    		
-    		publish("Averaging files (" + i + "/" + imgList.size() + ")");
-    		avgProgress = (int)(50 * ((double)i / (double)imgList.size()));
-
-    		
-    		//System.out.print("\nAveraging image " + imgCount + " of " + imgList.size() + "... ");
-    		avgColorList.add(averageColor(img));
-    		//System.out.print("[DONE]");
-    		i++;
-    	}
-	}	
 }
