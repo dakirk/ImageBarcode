@@ -143,7 +143,6 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
     				
     				Color avgColor = averageColor(tempImg);
     				annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
-    				System.out.println(annotatedColorList.size());
     				
     				tempImg.flush();
     				tempImg = null;

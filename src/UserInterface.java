@@ -485,7 +485,7 @@ public class UserInterface extends JFrame implements ActionListener {
 							}
 							
 						} catch (ExecutionException e) {
-							JOptionPane.showMessageDialog(null, "An error occurred during execution.");
+							JOptionPane.showMessageDialog(null, "An error has occurred while reading files. Please check that a valid folder is selected.");
 							progBar.setString("Error");
 							e.printStackTrace(System.out);
 						} catch (InterruptedException e) {
