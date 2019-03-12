@@ -217,7 +217,7 @@ public class ImageLoadWorker extends SwingWorker<ArrayList<Map.Entry<Color, Stri
 			//https://stackoverflow.com/questions/29705050/reading-a-progressively-encoded-9000x9000-jpeg-in-java-takes-1-minute?answertab=oldest#tab-top
 			BufferedImage image = new BufferedImageFactory(Toolkit.getDefaultToolkit().createImage(imgPath)).getBufferedImage();
 
-			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + image.getWidth()/8 + " height=" + image.getHeight()/8 + "></html>";
+			String hoverText = "<html>Filename: " + imgName + imgCaption + imgLocation + "<br>Timestamp: " + imgDate + "<br><img src=\"file:" + imgPath + "\"width=" + (int)(200.0*((double)image.getWidth()/(double)image.getHeight())) + " height=200></html>";
    			
    			Color avgColor = averageColor(image);
 			annotatedColorList.add(new AbstractMap.SimpleEntry<Color, String>(avgColor, hoverText));
